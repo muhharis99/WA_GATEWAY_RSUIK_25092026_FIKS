@@ -719,3 +719,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateVisibility();
 });
+document.addEventListener('DOMContentLoaded', function () {
+  const nav = document.querySelector('#mainNavbar .navbar-nav');
+  if (!nav) return;
+  [['LAB','lab/index.php'],['Ijin WA','ijin/index.php'],['Chat Dokter','chat_dokter.php']].forEach(function(item){
+    if ([...nav.querySelectorAll('a')].some(function(a){return a.getAttribute('href')===item[1];})) return;
+    const a=document.createElement('a'); a.className='nav-link'; a.href=item[1]; a.textContent=item[0]; nav.appendChild(a);
+  });
+});
