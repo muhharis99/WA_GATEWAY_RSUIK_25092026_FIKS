@@ -42,7 +42,7 @@ if(!is_array($result)){
 }
 
 try{
-    $pdo=get_db('rsiklaten');
+    $pdo=get_db('lab');
     ensureGatewayReportTables($pdo);
     logGatewayLabResults($pdo,$message,(array)($result['data']??[]));
     $result['report_logged']=true;
