@@ -243,7 +243,7 @@ $encodedFilterQuery = htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8');
 <body class="bg-body-tertiary">
     <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
         <div class="container py-2">
-            <a class="navbar-brand fw-bold text-success" href="index.php"><?= e(APP_NAME) ?></a>
+            <a class="navbar-brand fw-bold text-success" href="index.php">Dokter Reminder RSU Islam Klaten</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -253,6 +253,11 @@ $encodedFilterQuery = htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8');
                     <a class="nav-link" href="master.php">Master Data</a>
                     <a class="nav-link" href="settings.php">Template</a>
                     <a class="nav-link" href="report.php">Report</a>
+                    <a class="nav-link" href="dokter_ijin.php">Dokter Ijin</a>
+                    <a class="nav-link" href="pindah_jam_praktek.php">Pindah Jam Praktek</a>
+                    <a class="nav-link" href="chat_dokter.php">Chat Dokter</a>
+                    <a class="nav-link" href="lab/index.php">LAB</a>
+                    <a class="nav-link" href="ijin/index.php">Ijin WA</a>
                 </div>
             </div>
         </div>
