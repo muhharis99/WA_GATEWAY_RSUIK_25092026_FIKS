@@ -43,6 +43,29 @@ Port lama tetap dipertahankan:
 Ketiganya berada dalam satu repository; masing-masing service memakai source gateway yang sudah terbukti di project asal.
 
 ## Install
+
+### PHP / Apache / Nginx
+Salin `.env.example` menjadi `.env` di folder yang sama dengan `config.php`:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Minimal isi:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=USERNAME_DATABASE_ANDA
+DB_PASS=PASSWORD_DATABASE_ANDA
+```
+
+PHP sekarang membaca file `.env` secara langsung dari folder project, karena PHP-FPM/Apache biasanya tidak mewariskan variabel environment dari shell.
+
+Pastikan file `.env` bisa dibaca oleh user PHP-FPM/Apache, tetapi jangan dibuat world-readable pada server produksi.
+
+### Dependency
 composer install
 npm install
 
@@ -52,3 +75,8 @@ npm run start:lab
 npm run start:ijin
 
 Password database dan session WhatsApp sengaja tidak disimpan di repository.
+
+
+## Troubleshooting koneksi database
+
+Jika muncul error seperti `Access denied for user ''@'localhost'`, berarti username database belum terbaca. Periksa file `.env`, terutama `DB_USER` dan `DB_PASS`. Jangan mengisi username database dengan string kosong. Jika database memakai akun berbeda, gunakan `DB_RSIKLATEN_USER`, `DB_RSI_BYL_USER`, atau `DB_RME_USER` sesuai koneksi yang diperlukan.
