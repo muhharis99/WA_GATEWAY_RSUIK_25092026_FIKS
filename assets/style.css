@@ -181,39 +181,32 @@ main.container {
 .xbox::after,
 .card::after,
 .card-modern::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: var(--radius);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: none !important;
+    content: none !important;
 }
 
 .card:hover,
 .card-modern:hover {
-    z-index: 20;
+    z-index: auto !important;
+    transform: none !important;
 }
 
 .card:hover::after,
 .card-modern:hover::after,
 .xbox:hover::after {
-    opacity: 1;
+    opacity: 0 !important;
+    box-shadow: none !important;
 }
 
 .xbox:hover {
-    z-index: 99;
-    transform: scale(1.25, 1.25);
+    z-index: auto !important;
+    transform: none !important;
 }
 
 .row.g-3 > [class*="col-"] > .card:not(:has(.table-responsive)):not(:has(form)):not(:has(.message-preview)):hover,
 .row.g-4 > [class*="col-"] > .card:not(:has(.table-responsive)):not(:has(form)):not(:has(.message-preview)):hover {
-    z-index: 99;
-    transform: scale(1.08);
+    z-index: auto !important;
+    transform: none !important;
 }
 
 .card-header,
