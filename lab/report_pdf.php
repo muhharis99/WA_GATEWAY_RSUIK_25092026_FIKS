@@ -21,7 +21,7 @@ try {
         $status = '';
     }
 
-    $pdo = get_db('rsiklaten');
+    $pdo = get_db('lab');
     ensureGatewayReportTables($pdo);
 
     $sql = "
