@@ -16,10 +16,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 // Dipertahankan sesuai konfigurasi gateway lama Anda.
 // Saat ini endpoint /send tidak membutuhkan query ke database ini.
 const db = mysql.createPool({
-  host: '192.168.0.33',
-  user: 'admin',
-  password: 'admin3dp',
-  database: 'rsiklaten',
+  host: process.env.LAB_DB_HOST || process.env.DB_HOST || '127.0.0.1',
+  user: process.env.LAB_DB_USER || process.env.DB_USER || '',
+  password: process.env.LAB_DB_PASS || process.env.DB_PASS || '',
+  database: process.env.LAB_DB_NAME || 'rsiklaten',
   connectionLimit: 10,
 });
 
