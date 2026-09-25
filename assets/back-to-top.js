@@ -191,59 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    const navbarBrand = document.querySelector('.navbar-brand');
-
-    if (navbarBrand) {
-        navbarBrand.textContent = 'Dokter Reminder RSU Islam Klaten';
-    }
-
-    const navbarMenu = document.querySelector('#mainNavbar .navbar-nav');
-
-    if (navbarMenu) {
-        let leaveLink = navbarMenu.querySelector('a[href="dokter_ijin.php"]');
-
-        if (!leaveLink) {
-            const reportLink = navbarMenu.querySelector('a[href="report.php"]');
-            leaveLink = document.createElement('a');
-            leaveLink.className = 'nav-link';
-            leaveLink.href = 'dokter_ijin.php';
-            leaveLink.textContent = 'Dokter Ijin';
-
-            if (reportLink && reportLink.nextSibling) {
-                navbarMenu.insertBefore(leaveLink, reportLink.nextSibling);
-            } else {
-                navbarMenu.appendChild(leaveLink);
-            }
-        }
-
-        if (!navbarMenu.querySelector('a[href="pindah_jam_praktek.php"]')) {
-            const movedPracticeLink = document.createElement('a');
-            movedPracticeLink.className = 'nav-link';
-            movedPracticeLink.href = 'pindah_jam_praktek.php';
-            movedPracticeLink.textContent = 'Pindah Jam Praktek';
-
-            if (leaveLink && leaveLink.nextSibling) {
-                navbarMenu.insertBefore(movedPracticeLink, leaveLink.nextSibling);
-            } else {
-                navbarMenu.appendChild(movedPracticeLink);
-            }
-        }
-
-        if (!navbarMenu.querySelector('a[href="chat_dokter.php"]')) {
-            const movedPracticeLink = navbarMenu.querySelector('a[href="pindah_jam_praktek.php"]');
-            const chatDoctorLink = document.createElement('a');
-            chatDoctorLink.className = 'nav-link';
-            chatDoctorLink.href = 'chat_dokter.php';
-            chatDoctorLink.textContent = 'Chat Dokter';
-
-            if (movedPracticeLink && movedPracticeLink.nextSibling) {
-                navbarMenu.insertBefore(chatDoctorLink, movedPracticeLink.nextSibling);
-            } else {
-                navbarMenu.appendChild(chatDoctorLink);
-            }
-        }
-    }
-
     const button = document.createElement('button');
     button.type = 'button';
     button.id = 'backToTop';
@@ -718,12 +665,4 @@ document.addEventListener('DOMContentLoaded', function () {
     footer.style.setProperty('transition', 'none', 'important');
 
     updateVisibility();
-});
-document.addEventListener('DOMContentLoaded', function () {
-  const nav = document.querySelector('#mainNavbar .navbar-nav');
-  if (!nav) return;
-  [['LAB','lab/index.php'],['Ijin WA','ijin/index.php'],['Chat Dokter','chat_dokter.php']].forEach(function(item){
-    if ([...nav.querySelectorAll('a')].some(function(a){return a.getAttribute('href')===item[1];})) return;
-    const a=document.createElement('a'); a.className='nav-link'; a.href=item[1]; a.textContent=item[0]; nav.appendChild(a);
-  });
 });
