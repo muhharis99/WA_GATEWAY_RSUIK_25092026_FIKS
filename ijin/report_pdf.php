@@ -20,7 +20,7 @@ try {
         $status = '';
     }
 
-    $pdo = get_db('rsiklaten');
+    $pdo = get_db('ijin');
     ensureGatewayReportTables($pdo);
 
     $sql = "
