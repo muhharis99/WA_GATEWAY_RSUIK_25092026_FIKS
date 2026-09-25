@@ -102,7 +102,7 @@ try {
         }
     }
 
-    $hospitalName = setting('nama_rs', 'RSU ISLAM KLATEN');
+    $hospitalName = 'RSU ISLAM KLATEN';
     $tempDir = sys_get_temp_dir() . '/dokter-reminder-mpdf';
 
     if (!is_dir($tempDir)) {
