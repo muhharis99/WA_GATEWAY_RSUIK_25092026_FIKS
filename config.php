@@ -3,12 +3,16 @@
 declare(strict_types=1);
 
 /**
- * Load .env from the project directory.
+ * Konfigurasi mengikuti repo sumber:
+ * - REMINDER_DOKTER_RSUIK_25092026_FIKS
+ *   local     -> 192.168.0.14 / dokter_reminder
+ *   rsiklaten -> 192.168.0.67 / db_67
+ *   rsi_byl   -> 192.168.0.14 / rsi_byl
+ *   rme       -> 192.168.0.33 / rme
  *
- * PHP-FPM/Apache does not automatically read a .env file, so values that
- * exist only in .env must be loaded into the process before getenv() is used.
- * Existing real environment variables always take precedence.
+ * File .env tetap dapat dipakai untuk override di server.
  */
+
 function loadProjectEnv(string $file): void
 {
     if (!is_file($file) || !is_readable($file)) {
@@ -54,12 +58,9 @@ function loadProjectEnv(string $file): void
         ) {
             $value = substr($value, 1, -1);
         } else {
-            $value = preg_replace('/\s+#.*$/', '', $value);
-            $value = trim((string) $value);
+            $value = trim((string) preg_replace('/\s+#.*$/', '', $value));
         }
 
-        // Do not overwrite a value that was already supplied by the web
-        // server / PHP-FPM / process environment.
         if (getenv($key) === false) {
             putenv($key . '=' . $value);
             $_ENV[$key] = $value;
@@ -77,46 +78,45 @@ $env = static function (string $key, string $fallback = ''): string {
         : $value;
 };
 
-$defaultUser = $env('DB_USER', '');
-$defaultPass = $env('DB_PASS', '');
-$defaultHost = $env('DB_HOST', '127.0.0.1');
-$defaultPort = (int) $env('DB_PORT', '3306');
-
+/*
+ * Fallback sengaja mengikuti konfigurasi repo Reminder asli.
+ * Dengan demikian aplikasi tetap berjalan walaupun .env belum dibuat.
+ */
 $databases = [
     'local' => [
-        'host' => $env('DB_LOCAL_HOST', $defaultHost),
-        'port' => (int) $env('DB_LOCAL_PORT', (string) $defaultPort),
-        'user' => $env('DB_LOCAL_USER', $defaultUser),
-        'pass' => $env('DB_LOCAL_PASS', $defaultPass),
+        'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
+        'port' => (int) $env('DB_LOCAL_PORT', '3306'),
+        'user' => $env('DB_LOCAL_USER', 'admin3dp'),
+        'pass' => $env('DB_LOCAL_PASS', '4dm1n3dp'),
         'name' => $env('DB_LOCAL_NAME', 'dokter_reminder')
     ],
 
     'rsiklaten' => [
-        'host' => $env('DB_RSIKLATEN_HOST', $defaultHost),
-        'port' => (int) $env('DB_RSIKLATEN_PORT', (string) $defaultPort),
-        'user' => $env('DB_RSIKLATEN_USER', $defaultUser),
-        'pass' => $env('DB_RSIKLATEN_PASS', $defaultPass),
+        'host' => $env('DB_RSIKLATEN_HOST', '192.168.0.67'),
+        'port' => (int) $env('DB_RSIKLATEN_PORT', '3306'),
+        'user' => $env('DB_RSIKLATEN_USER', 'admin'),
+        'pass' => $env('DB_RSIKLATEN_PASS', 'admin3dp'),
         'name' => $env('DB_RSIKLATEN_NAME', 'db_67')
     ],
 
     'rsi_byl' => [
-        'host' => $env('DB_RSI_BYL_HOST', $defaultHost),
-        'port' => (int) $env('DB_RSI_BYL_PORT', (string) $defaultPort),
-        'user' => $env('DB_RSI_BYL_USER', $defaultUser),
-        'pass' => $env('DB_RSI_BYL_PASS', $defaultPass),
+        'host' => $env('DB_RSI_BYL_HOST', '192.168.0.14'),
+        'port' => (int) $env('DB_RSI_BYL_PORT', '3306'),
+        'user' => $env('DB_RSI_BYL_USER', 'admin3dp'),
+        'pass' => $env('DB_RSI_BYL_PASS', '4dm1n3dp'),
         'name' => $env('DB_RSI_BYL_NAME', 'rsi_byl')
     ],
 
     'rme' => [
-        'host' => $env('DB_RME_HOST', $defaultHost),
-        'port' => (int) $env('DB_RME_PORT', (string) $defaultPort),
-        'user' => $env('DB_RME_USER', $defaultUser),
-        'pass' => $env('DB_RME_PASS', $defaultPass),
+        'host' => $env('DB_RME_HOST', '192.168.0.33'),
+        'port' => (int) $env('DB_RME_PORT', '3306'),
+        'user' => $env('DB_RME_USER', 'admin'),
+        'pass' => $env('DB_RME_PASS', 'admin3dp'),
         'name' => $env('DB_RME_NAME', 'rme')
     ]
 ];
 
-const APP_NAME = 'WA Gateway RSUIK';
+const APP_NAME = 'DokterReminder';
 
 const DEFAULT_TEMPLATE = "Assalamualaikum, {{nama_dokter}}.
 
@@ -137,15 +137,6 @@ Wassalamualaikum, Wr.Wb";
 
 date_default_timezone_set('Asia/Jakarta');
 
-/**
- * Fail early with a clear message instead of PDO trying to authenticate
- * with an empty username such as ''@localhost.
- */
-foreach ($databases as $name => $database) {
-    if (trim((string) $database['user']) === '') {
-        throw new RuntimeException(
-            "Konfigurasi database '$name' belum memiliki username. " .
-            "Buat file .env di folder project atau set DB_USER/DB_{$name}_USER sesuai kebutuhan."
-        );
-    }
-}
+$protocol = isset($_SERVER['HTTPS']) ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$base_url = $protocol . '://' . $host . dirname($_SERVER['PHP_SELF']);
