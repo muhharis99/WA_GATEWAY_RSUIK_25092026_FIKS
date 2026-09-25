@@ -256,7 +256,7 @@ function h2($value): string
                         <option value="">Semua Status</option>
                         <option value="1">Terkirim</option>
                         <option value="2">Gagal Kirim</option>
-                        <option value="NULL">Belum Diproses</option>
+                        
                     </select>
                 </div>
                 <div class="col-12 d-flex gap-2 pt-1">
