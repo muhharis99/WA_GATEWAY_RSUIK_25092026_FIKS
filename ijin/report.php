@@ -11,7 +11,7 @@ if (!in_array($status, ['', '1', '2'], true)) {
     $status = '';
 }
 
-$pdo = get_db('rsiklaten');
+$pdo = get_db('ijin');
 $error = '';
 $rows = [];
 
