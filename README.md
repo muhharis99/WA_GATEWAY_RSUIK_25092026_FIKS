@@ -10,11 +10,29 @@ Tampilan web mengikuti basis Reminder Dokter.
 ## Struktur
 - /index.php — Reminder Dokter
 - /lab/index.php — menu Laboratorium
+- /lab/report.php — laporan LAB + filter tanggal + PDF
 - /ijin/index.php — menu Ijin WA
+- /ijin/report.php — laporan Ijin + filter tanggal + PDF
 - /chat_dokter.php — Chat Dokter
 - /master.php — Master Data
 - /settings.php — Template
-- /report.php — Report
+- /report.php — laporan Reminder + filter tanggal + PDF
+- /report_functions.php — helper filter tanggal dan log laporan gateway
+
+## Laporan
+Laporan memakai pola yang sama dengan Report Reminder yang sudah ada:
+- filter Tanggal Awal dan Tanggal Akhir
+- filter status
+- tabel DataTables
+- tombol Cetak PDF menggunakan mPDF
+- format PDF A4 Landscape
+- rekap Total / Terkirim / Gagal
+
+Untuk LAB tersedia filter No. Registrasi. Riwayat pengiriman LAB dan Ijin dicatat di database RSUI Klaten melalui tabel:
+- wa_gateway_lab_logs
+- wa_gateway_ijin_logs
+
+Tabel laporan dibuat otomatis dengan CREATE TABLE IF NOT EXISTS saat modul laporan/pengiriman dipakai. Jika akun database tidak memiliki hak CREATE TABLE, buat tabel tersebut secara manual dari skema pada `report_functions.php`.
 
 ## Gateway
 Port lama tetap dipertahankan:
