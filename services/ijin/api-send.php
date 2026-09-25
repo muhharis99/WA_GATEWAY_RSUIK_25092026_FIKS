@@ -36,7 +36,7 @@ if($body===false||!is_array($result)){
 }
 
 try{
-    $pdo=get_db('rsiklaten');
+    $pdo=get_db('ijin');
     ensureGatewayReportTables($pdo);
 
     foreach((array)($result['data']??[]) as $item){
