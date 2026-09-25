@@ -17,10 +17,10 @@ app.use(
 );
 
 const db = mysql.createPool({
-  host: '192.168.0.33',
-  user: 'admin',
-  password: 'admin3dp',
-  database: 'rsiklaten',
+  host: process.env.IJIN_DB_HOST || process.env.DB_HOST || '127.0.0.1',
+  user: process.env.IJIN_DB_USER || process.env.DB_USER || '',
+  password: process.env.IJIN_DB_PASS || process.env.DB_PASS || '',
+  database: process.env.IJIN_DB_NAME || 'rsiklaten',
   connectionLimit: 10
 });
 
