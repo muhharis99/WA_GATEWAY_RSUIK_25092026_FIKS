@@ -113,6 +113,24 @@ $databases = [
         'user' => $env('DB_RME_USER', 'admin'),
         'pass' => $env('DB_RME_PASS', 'admin3dp'),
         'name' => $env('DB_RME_NAME', 'rme')
+    ],
+
+    // Koneksi khusus LAB sesuai repo LAB asli.
+    'lab' => [
+        'host' => $env('LAB_DB_HOST', '192.168.0.33'),
+        'port' => (int) $env('LAB_DB_PORT', '3306'),
+        'user' => $env('LAB_DB_USER', 'admin'),
+        'pass' => $env('LAB_DB_PASS', 'admin3dp'),
+        'name' => $env('LAB_DB_NAME', 'rsiklaten')
+    ],
+
+    // Koneksi khusus IJIN sesuai repo Ijin asli.
+    'ijin' => [
+        'host' => $env('IJIN_DB_HOST', '192.168.0.33'),
+        'port' => (int) $env('IJIN_DB_PORT', '3306'),
+        'user' => $env('IJIN_DB_USER', 'admin'),
+        'pass' => $env('IJIN_DB_PASS', 'admin3dp'),
+        'name' => $env('IJIN_DB_NAME', 'rsiklaten')
     ]
 ];
 
