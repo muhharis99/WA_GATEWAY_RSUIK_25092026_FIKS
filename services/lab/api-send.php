@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+$p=json_decode((string)file_get_contents('php://input'),true)?:[];$numbers=trim((string)($p['numbers']??''));$message=trim((string)($p['message']??''));
+if($numbers===''||$message===''){http_response_code(422);header('Content-Type:application/json');echo json_encode(['success'=>false,'message'=>'numbers dan message wajib diisi']);exit;}
+$ch=curl_init('http://127.0.0.1:9000/send');curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>120,CURLOPT_HTTPHEADER=>['Content-Type:application/json'],CURLOPT_POSTFIELDS=>json_encode(['numbers'=>$numbers,'message'=>$message])]);$body=curl_exec($ch);$err=curl_error($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);header('Content-Type:application/json');if($body===false){http_response_code(500);echo json_encode(['success'=>false,'message'=>$err]);exit;}http_response_code($code?:200);echo $body;
