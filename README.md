@@ -34,6 +34,16 @@ Untuk LAB tersedia filter No. Registrasi. Riwayat pengiriman LAB dan Ijin dicata
 
 Tabel laporan dibuat otomatis dengan CREATE TABLE IF NOT EXISTS saat modul laporan/pengiriman dipakai. Jika akun database tidak memiliki hak CREATE TABLE, buat tabel tersebut secara manual dari skema pada `report_functions.php`.
 
+## Database
+
+Koneksi database dipisahkan sesuai tiga project sumber:
+- Reminder `local`: konfigurasi `dokter_reminder`
+- Reminder `rsiklaten`: konfigurasi `db_67`
+- Reminder `rsi_byl`: konfigurasi `rsi_byl`
+- Reminder `rme`: konfigurasi `rme`
+- DB LAB: `192.168.0.33 / rsiklaten`
+- DB Ijin: `192.168.0.33 / rsiklaten`
+
 ## Gateway
 Port lama tetap dipertahankan:
 - 3210 Reminder + Chat
