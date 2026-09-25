@@ -82,28 +82,26 @@ function h2($value): string
 <body class="bg-body-tertiary">
 
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-    <div class="container py-2">
-        <a class="navbar-brand fw-bold text-success" href="../index.php"><?= h2(APP_NAME) ?></a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="mainNavbar">
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="../index.php">Dashboard</a>
-                <a class="nav-link" href="../lab/index.php">LAB</a>
-                <a class="nav-link active fw-semibold" href="index.php">Ijin Dokter</a>
-                <a class="nav-link" href="../chat_dokter.php">Chat Dokter</a>
-                <a class="nav-link" href="../master.php">Master Data</a>
-                <a class="nav-link" href="../settings.php">Template</a>
-                <a class="nav-link" href="../report.php">Laporan Reminder</a>
-                <a class="nav-link" href="../lab/report.php">Laporan LAB</a>
-                <a class="nav-link" href="report.php">Laporan Ijin</a>
+        <div class="container py-2">
+            <a class="navbar-brand fw-bold text-success" href="../index.php">Dokter Reminder RSU Islam Klaten</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="../index.php">Dashboard</a>
+                    <a class="nav-link" href="../master.php">Master Data</a>
+                    <a class="nav-link" href="../settings.php">Template</a>
+                    <a class="nav-link" href="../report.php">Report</a>
+                    <a class="nav-link" href="../dokter_ijin.php">Dokter Ijin</a>
+                    <a class="nav-link" href="../pindah_jam_praktek.php">Pindah Jam Praktek</a>
+                    <a class="nav-link" href="../chat_dokter.php">Chat Dokter</a>
+                    <a class="nav-link" href="../lab/index.php">LAB</a>
+                    <a class="nav-link active fw-semibold" href="../ijin/index.php">Ijin WA</a>
+                </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
 <main class="container py-4 py-lg-5">
 
