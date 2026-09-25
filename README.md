@@ -45,25 +45,18 @@ Ketiganya berada dalam satu repository; masing-masing service memakai source gat
 ## Install
 
 ### PHP / Apache / Nginx
-Salin `.env.example` menjadi `.env` di folder yang sama dengan `config.php`:
+Konfigurasi database sudah disamakan dengan tiga repo sumber. `config.php` memiliki fallback konfigurasi Reminder asli, sedangkan service LAB dan Ijin memiliki fallback konfigurasi masing-masing seperti repo asal. File `.env` tetap tersedia bila Anda ingin override nilai tersebut.
+
+Bila memakai `.env`, salin contoh:
 
 ```bash
 cp .env.example .env
 nano .env
 ```
 
-Minimal isi:
+PHP membaca `.env` langsung dari folder project sehingga tidak bergantung pada environment shell PHP-FPM/Apache.
 
-```env
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=USERNAME_DATABASE_ANDA
-DB_PASS=PASSWORD_DATABASE_ANDA
-```
-
-PHP sekarang membaca file `.env` secara langsung dari folder project, karena PHP-FPM/Apache biasanya tidak mewariskan variabel environment dari shell.
-
-Pastikan file `.env` bisa dibaca oleh user PHP-FPM/Apache, tetapi jangan dibuat world-readable pada server produksi.
+Pastikan file `.env` tidak dapat diakses publik oleh web server.
 
 ### Dependency
 composer install
@@ -74,7 +67,7 @@ npm run start:reminder
 npm run start:lab
 npm run start:ijin
 
-Password database dan session WhatsApp sengaja tidak disimpan di repository.
+Konfigurasi fallback saat ini mengikuti repo sumber yang diminta. Untuk deployment publik, gunakan `.env` dan pertimbangkan memindahkan kredensial dari source code lalu mengganti password database bila repository dapat diakses pihak lain.
 
 
 ## Troubleshooting koneksi database
