@@ -401,116 +401,113 @@ $pdfQuery = http_build_query([
     <script src="assets/back-to-top.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-            const startDateButton = document.getElementById('startDateButton');
-            const endDateButton = document.getElementById('endDateButton');
+$(function () {
+    var $startDate = $('#startDate');
+    var $endDate = $('#endDate');
 
-            const startDatePicker = flatpickr(startDate, {
-                dateFormat: 'd-m-Y',
-                defaultDate: startDate.value,
-                allowInput: true,
-                locale: 'id',
-                disableMobile: true
-            });
+    var startDatePicker = flatpickr('#startDate', {
+        dateFormat: 'd-m-Y',
+        defaultDate: $startDate.val(),
+        allowInput: true,
+        locale: 'id',
+        disableMobile: true
+    });
 
-            const endDatePicker = flatpickr(endDate, {
-                dateFormat: 'd-m-Y',
-                defaultDate: endDate.value,
-                allowInput: true,
-                locale: 'id',
-                disableMobile: true
-            });
+    var endDatePicker = flatpickr('#endDate', {
+        dateFormat: 'd-m-Y',
+        defaultDate: $endDate.val(),
+        allowInput: true,
+        locale: 'id',
+        disableMobile: true
+    });
 
-            startDateButton.addEventListener('click', function () {
-                startDatePicker.open();
-            });
+    $('#startDateButton').on('click', function () {
+        startDatePicker.open();
+    });
 
-            endDateButton.addEventListener('click', function () {
-                endDatePicker.open();
-            });
+    $('#endDateButton').on('click', function () {
+        endDatePicker.open();
+    });
 
-            $('.select2-status').select2({
-                theme: 'bootstrap-5',
-                width: '100%',
-                minimumResultsForSearch: Infinity
-            });
+    $('.select2-status').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        minimumResultsForSearch: Infinity
+    });
 
-            new DataTable('#reportTable', {
-                responsive: true,
-                pageLength: 25,
-                order: [[1, 'desc']],
-                language: {
-                    search: 'Cari:',
-                    lengthMenu: 'Tampilkan _MENU_ data',
-                    info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                    infoEmpty: 'Tidak ada data',
-                    zeroRecords: 'Data tidak ditemukan',
-                    emptyTable: 'Belum ada data',
-                    paginate: {
-                        first: 'Awal',
-                        last: 'Akhir',
-                        next: 'Berikutnya',
-                        previous: 'Sebelumnya'
-                    }
-                }
-            });
+    $('#reportTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[1, 'desc']],
+        language: {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Belum ada data',
+            paginate: {
+                first: 'Awal',
+                last: 'Akhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
+        }
+    });
 
-            const reportFilterForm = document.getElementById('reportFilterForm');
-            const showReportButton = document.getElementById('showReportButton');
-            const printPdfButton = document.getElementById('printPdfButton');
+    $('#reportFilterForm').on('submit', function () {
+        $('#showReportButton')
+            .prop('disabled', true)
+            .html('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Memuat...');
 
-            reportFilterForm.addEventListener('submit', function () {
-                showReportButton.disabled = true;
-                showReportButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Memuat...';
-
-                Swal.fire({
-                    title: 'Memuat Report',
-                    text: 'Mohon tunggu...',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showConfirmButton: false,
-                    didOpen: function () {
-                        Swal.showLoading();
-                    }
-                });
-            });
-
-            printPdfButton.addEventListener('click', function (event) {
-                event.preventDefault();
-
-                const button = this;
-                const url = button.href;
-                const originalHtml = button.innerHTML;
-
-                button.classList.add('disabled');
-                button.setAttribute('aria-disabled', 'true');
-                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Membuat PDF...';
-
-                Swal.fire({
-                    title: 'Membuat PDF',
-                    text: 'Report sedang diproses...',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    showConfirmButton: false,
-                    didOpen: function () {
-                        Swal.showLoading();
-                    }
-                });
-
-                window.setTimeout(function () {
-                    window.open(url, '_blank');
-                }, 700);
-
-                window.setTimeout(function () {
-                    Swal.close();
-                    button.classList.remove('disabled');
-                    button.removeAttribute('aria-disabled');
-                    button.innerHTML = originalHtml;
-                }, 2200);
-            });
+        Swal.fire({
+            title: 'Memuat Report',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: function () {
+                Swal.showLoading();
+            }
         });
-    </script>
+    });
+
+    $('#printPdfButton').on('click', function (event) {
+        event.preventDefault();
+
+        var $button = $(this);
+        var url = $button.attr('href');
+        var originalHtml = $button.html();
+
+        $button
+            .addClass('disabled')
+            .attr('aria-disabled', 'true')
+            .html('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Membuat PDF...');
+
+        Swal.fire({
+            title: 'Membuat PDF',
+            text: 'Report sedang diproses...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: function () {
+                Swal.showLoading();
+            }
+        });
+
+        setTimeout(function () {
+            window.open(url, '_blank');
+        }, 700);
+
+        setTimeout(function () {
+            Swal.close();
+            $button
+                .removeClass('disabled')
+                .removeAttr('aria-disabled')
+                .html(originalHtml);
+        }, 2200);
+    });
+});
+</script>
 </body>
 </html>
