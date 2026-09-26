@@ -76,6 +76,8 @@ function h2($value): string
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/v/bs5/dt-3.0.2/r-4.0.2/datatables.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/style.css">
     <link rel="icon" type="image/png" href="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png">
@@ -241,11 +243,11 @@ function h2($value): string
                 </div>
                 <div class="col-12 col-md-3 col-xl-2">
                     <label class="form-label" for="poli">Poli</label>
-                    <input type="text" id="poli" class="form-control" placeholder="Nama Poli">
+                    <select id="poli" class="form-select select2-history-filter" data-filter-type="poli" data-placeholder="Semua Poli"><option value=""></option></select>
                 </div>
                 <div class="col-12 col-md-3 col-xl-2">
                     <label class="form-label" for="namaDokter">Dokter</label>
-                    <input type="text" id="namaDokter" class="form-control" placeholder="Nama Dokter">
+                    <select id="namaDokter" class="form-select select2-history-filter" data-filter-type="dokter" data-placeholder="Semua Dokter"><option value=""></option></select>
                 </div>
                 <div class="col-12 col-md-3 col-xl-2">
                     <label class="form-label" for="tglKirim">Tanggal Kirim</label>
@@ -261,7 +263,6 @@ function h2($value): string
                     </select>
                 </div>
                 <div class="col-12 d-flex gap-2 pt-1">
-                    <button type="button" class="btn btn-success" id="btnCari">Cari</button>
                     <button type="button" class="btn btn-outline-secondary" id="btnReset">Reset</button>
                 </div>
             </form>
@@ -297,6 +298,7 @@ function h2($value): string
 </footer>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/v/bs5/dt-3.0.2/r-4.0.2/datatables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
