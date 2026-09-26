@@ -18,6 +18,8 @@ jobs:
         run: npm run test:contract
       - name: jQuery frontend contract
         run: npm run test:jquery
+      - name: Composer dependency check
+        run: composer install --no-interaction --no-progress --prefer-dist
       - name: PHP syntax check
         shell: bash
         run: |
