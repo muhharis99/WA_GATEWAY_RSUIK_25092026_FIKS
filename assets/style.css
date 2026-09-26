@@ -95,9 +95,10 @@ h3.h5 {
     max-width: none !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    border-left: 1px solid rgba(0, 0, 0, 0.12);
-    border-right: 1px solid rgba(0, 0, 0, 0.12);
-}
+    margin-left: auto !important;
+    margin-right: auto !important;
+    border-left: 0 !important;
+    border-right: 0 !important;}
 
 .navbar-brand,
 .navbar .navbar-brand,
