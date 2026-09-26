@@ -2,6 +2,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
+const path = require('path');
+
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(path.join(PROJECT_ROOT, '.env'));
+  } catch (error) {
+    console.warn('⚠️ .env LAB tidak dapat dimuat:', error.message || error);
+  }
+}
+
 const { sendMessage, shutdown: shutdownWhatsApp } = require('./sendMessage');
 
 const app = express();

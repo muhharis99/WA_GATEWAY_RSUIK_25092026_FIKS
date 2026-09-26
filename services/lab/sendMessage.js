@@ -14,8 +14,9 @@ const QRCode = require('qrcode');
  * manual edit inside node_modules every time the gateway is installed.
  */
 function patchWhatsAppWebMediaBug() {
+  const projectRoot = path.resolve(__dirname, '../..');
   const utilsPath = path.join(
-    __dirname,
+    projectRoot,
     'node_modules',
     'whatsapp-web.js',
     'src',
@@ -147,8 +148,9 @@ function createClient() {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--no-first-run',
-        '--no-zygote',
-        '--single-process',
+        '--no-default-browser-check',
+        '--disable-background-networking',
+        '--disable-renderer-backgrounding',
       ],
     },
     bypassCSP: true,

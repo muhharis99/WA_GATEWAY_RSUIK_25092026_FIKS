@@ -2,6 +2,16 @@ const mysql = require('mysql');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
+
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile(path.join(PROJECT_ROOT, '.env'));
+  } catch (error) {
+    console.warn('⚠️ .env IJIN tidak dapat dimuat:', error.message || error);
+  }
+}
 
 const { sendMessage, shutdown: shutdownWhatsApp } = require('./sendMessage');
 
@@ -118,7 +128,7 @@ app.post('/send', async (req, res) => {
 
 });
 
-app.listen(
+const server = app.listen(
   port,
   '0.0.0.0',
   () => {
