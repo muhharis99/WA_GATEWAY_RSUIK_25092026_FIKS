@@ -34,7 +34,7 @@ function int(name, fallback) {
 module.exports = {
   projectRoot,
   host: process.env.WA_HOST || '0.0.0.0',
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost,http://127.0.0.1,http://192.168.0.93',
   ports: {
     reminder: int('REMINDER_GATEWAY_PORT', 3210),
     lab: int('LAB_GATEWAY_PORT', 9000),
