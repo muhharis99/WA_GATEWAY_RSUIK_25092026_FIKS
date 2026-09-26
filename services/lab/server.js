@@ -199,6 +199,7 @@ function createClient() {
 
   newClient.on('auth_failure', (msg) => {
     clientReady = false;
+    lastInitError = String(msg || 'Authentication failure');
     console.error('❌ Auth failure:', msg);
   });
 
@@ -251,6 +252,19 @@ async function waitUntilConnected(targetClient = client) {
   throw new Error('Timeout: WhatsApp tidak CONNECTED');
 }
 
+function isStartupError(error) {
+  const message = String(error?.message || error || '');
+
+  return (
+    message.includes('Execution context was destroyed') ||
+    message.includes('Navigating frame was detached') ||
+    message.includes('Session closed') ||
+    message.includes('Target closed') ||
+    message.includes('Protocol error') ||
+    message.includes('Timeout initialize WhatsApp LAB')
+  );
+}
+
 function initializeClient() {
   if (initializing) return initializing;
 
@@ -258,42 +272,68 @@ function initializeClient() {
   lastInitError = null;
 
   initializing = (async () => {
-    try {
-      if (!client) {
-        client = createClient();
-      }
+    const maxAttempts = 4;
 
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Timeout initialize WhatsApp LAB setelah 90 detik.'));
-        }, 90000).unref();
-      });
-
-      await Promise.race([
-        client.initialize(),
-        timeoutPromise
-      ]);
-
-      return client;
-    } catch (err) {
-      clientReady = false;
-      lastInitError = err.message || String(err);
-      console.error('❌ Gagal initialize WhatsApp LAB:', lastInitError);
-
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
-        if (client) {
-          await client.destroy();
+        if (!client) {
+          client = createClient();
         }
-      } catch (_) {}
 
-      client = null;
-      throw err;
-    } finally {
-      initializing = null;
+        console.log(
+          `🚀 Initializing WhatsApp LAB (${attempt}/${maxAttempts})...`
+        );
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(
+              new Error('Timeout initialize WhatsApp LAB setelah 90 detik.')
+            );
+          }, 90000).unref();
+        });
+
+        await Promise.race([
+          client.initialize(),
+          timeoutPromise
+        ]);
+
+        return client;
+      } catch (err) {
+        clientReady = false;
+        lastInitError = err.message || String(err);
+
+        console.error(
+          `❌ Gagal initialize WhatsApp LAB (${attempt}/${maxAttempts}):`,
+          lastInitError
+        );
+
+        try {
+          if (client) {
+            await client.destroy();
+          }
+        } catch (destroyError) {
+          console.warn(
+            '⚠️ Gagal destroy client LAB setelah initialize error:',
+            destroyError.message || destroyError
+          );
+        }
+
+        client = null;
+
+        if (!isStartupError(err) || attempt >= maxAttempts) {
+          throw err;
+        }
+
+        await delay(5000);
+      }
     }
+
+    throw new Error('LAB gagal diinisialisasi.');
   })();
 
-  return initializing;
+  return initializing.finally(() => {
+    initializing = null;
+  });
 }
 
 async function resetClient() {
@@ -581,9 +621,15 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
+  const status = getStatus();
+
   res.json({
     success: true,
     status: 'online',
+    state: status.state,
+    ready: status.ready,
+    qrAvailable: status.qrAvailable,
+    error: status.error || null,
   });
 });
 
