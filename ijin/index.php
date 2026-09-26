@@ -362,28 +362,6 @@ function h2($value): string
         }
     }
 
-    async function refreshIjinGatewayDot() {
-        try {
-            const response = await fetch(baseUrl + '/health', {
-                cache: 'no-store'
-            });
-
-            const data = await response.json();
-            dot.className = 'gateway-dot';
-
-            if (data.ready || data.state === 'READY') {
-                dot.classList.add('ready');
-            } else if (
-                data.state === 'ERROR' ||
-                data.state === 'AUTH_FAILURE'
-            ) {
-                dot.classList.add('error');
-            }
-        } catch (error) {
-            dot.className = 'gateway-dot error';
-        }
-    }
-
     refreshIjinGatewayDot();
     setInterval(refreshIjinGatewayDot, 5000);
 })();
