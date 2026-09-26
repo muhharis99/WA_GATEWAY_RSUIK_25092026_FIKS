@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 let clientReady = false;
-let initializing = false;
+let initializing = null;
 
 const AUTH_PATH = path.join(__dirname, '.wwebjs_auth');
 
@@ -325,31 +325,25 @@ async function sendMessage(numbers, message) {
   return results;
 }
 
-async function initializeClient() {
+function initializeClient() {
+  if (initializing) return initializing;
 
-  if (initializing) {
-    return;
-  }
+  initializing = (async () => {
+    try {
+      console.log('\n========================================');
+      console.log('🚀 Initializing WhatsApp client...');
+      console.log('========================================\n');
+      await client.initialize();
+      return client;
+    } catch (err) {
+      console.error('❌ Gagal initialize WhatsApp:', err.message);
+      throw err;
+    } finally {
+      initializing = null;
+    }
+  })();
 
-  initializing = true;
-
-  try {
-
-    console.log('\n========================================');
-    console.log('🚀 Initializing WhatsApp client...');
-    console.log('========================================\n');
-
-    await client.initialize();
-
-  } catch (err) {
-
-    console.error(
-      '❌ Gagal initialize WhatsApp:',
-      err.message
-    );
-
-    initializing = false;
-  }
+  return initializing;
 }
 
 initializeClient();
