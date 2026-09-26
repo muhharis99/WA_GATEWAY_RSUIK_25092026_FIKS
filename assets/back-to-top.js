@@ -299,12 +299,13 @@
                 }
 
                 function updateReminderStatus(reminderId, action) {
-                    var url = new URL(window.location.href);
-                    url.searchParams.set('action', action);
-                    url.searchParams.set('id', reminderId);
+                    var separator = location.href.indexOf('?') === -1 ? '?' : '&';
 
                     return $.ajax({
-                        url: url.toString(),
+                        url: location.href.split('#')[0] + separator + $.param({
+                            action: action,
+                            id: reminderId
+                        }),
                         type: 'GET',
                         cache: false
                     });
@@ -365,23 +366,30 @@
                         $bulkCheckbox.prop('disabled', true);
                         $allButtons.prop('disabled', true);
 
+                        function finishBulkSend() {
+                            var resultHtml = 'Berhasil dikirim: <strong>' + successCount + '</strong><br>Gagal: <strong>' + failedCount + '</strong>';
+
+                            if (failures.length) {
+                                resultHtml += '<br><br>Gagal dikirim ke:<br>' + failures.join('<br>');
+                            }
+
+                            Swal.fire({
+                                icon: failedCount === 0 ? 'success' : 'warning',
+                                title: 'Pengiriman Selesai',
+                                html: resultHtml,
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#198754'
+                            }).then(function () {
+                                $bulkCheckbox.prop('checked', false).prop('disabled', false);
+                                $allButtons.prop('disabled', false);
+                                location.reload();
+                            });
+                        }
+
                         function processNext(index) {
                             if (index >= $sendButtons.length) {
-                                var resultHtml = 'Berhasil dikirim: <strong>' + successCount + '</strong><br>Gagal: <strong>' + failedCount + '</strong>';
-
-                                if (failures.length) {
-                                    resultHtml += '<br><br>Gagal dikirim ke:<br>' + failures.join('<br>');
-                                }
-
-                                return Swal.fire({
-                                    icon: failedCount === 0 ? 'success' : 'warning',
-                                    title: 'Pengiriman Selesai',
-                                    html: resultHtml,
-                                    confirmButtonText: 'OK',
-                                    confirmButtonColor: '#198754'
-                                }).then(function () {
-                                    location.reload();
-                                });
+                                finishBulkSend();
+                                return;
                             }
 
                             var $button = $sendButtons.eq(index);
@@ -401,31 +409,38 @@
                                 }
                             });
 
-                            $.ajax({
-                                url: gatewayUrl + '/send',
-                                type: 'POST',
-                                contentType: 'application/json',
-                                dataType: 'json',
-                                data: JSON.stringify({
-                                    phone: phone,
-                                    message: message
+                            function sendReminder() {
+                                return $.ajax({
+                                    url: gatewayUrl + '/send',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    dataType: 'json',
+                                    data: JSON.stringify({
+                                        phone: phone,
+                                        message: message
+                                    })
+                                }).then(function (result) {
+                                    if (!result.success) {
+                                        return $.Deferred().reject({
+                                            message: result.message || 'Gagal mengirim WhatsApp.'
+                                        }).promise();
+                                    }
+
+                                    return updateReminderStatus(reminderId, 'sent');
+                                });
+                            }
+
+                            sendReminder()
+                                .done(function () {
+                                    successCount++;
+                                    $button.text('Kirim Ulang WhatsApp');
+                                    processNext(index + 1);
                                 })
-                            }).done(function (result) {
-                                if (!result.success) {
-                                    throw new Error(result.message || 'Gagal mengirim WhatsApp.');
-                                }
+                                .fail(function () {
+                                    failedCount++;
+                                    failures.push(doctorName);
 
-                                return updateReminderStatus(reminderId, 'sent');
-                            }).done(function () {
-                                successCount++;
-                                $button.text('Kirim Ulang WhatsApp');
-                                processNext(index + 1);
-                            }).fail(function () {
-                                failedCount++;
-                                failures.push(doctorName);
-
-                                updateReminderStatus(reminderId, 'failed')
-                                    .always(function () {
+                                    updateReminderStatus(reminderId, 'failed').always(function () {
                                         if (index < $sendButtons.length - 1) {
                                             var delaySeconds = randomDelaySeconds();
 
@@ -447,13 +462,10 @@
                                             processNext(index + 1);
                                         }
                                     });
-                            });
+                                });
                         }
 
                         processNext(0);
-                    }).always(function () {
-                        $bulkCheckbox.prop('checked', false).prop('disabled', false);
-                        $allButtons.prop('disabled', false);
                     });
                 });
             }
