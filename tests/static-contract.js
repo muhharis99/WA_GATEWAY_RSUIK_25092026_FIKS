@@ -20,6 +20,9 @@ const required = [
   ['.env.example', /REMINDER_GATEWAY_PORT=3210/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('disconnected'/],
   ['src/whatsapp/createClient.js', /resolveBrowserExecutable/],
+  ['src/whatsapp/createClient.js', /userAgent: false/],
+  ['src/whatsapp/createClient.js', /webVersionCache: \{ type: 'none' \}/],
+  ['src/whatsapp/WhatsAppLifecycle.js', /watchAuthenticatedReady/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('auth_failure'/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('error'/]
 ];
