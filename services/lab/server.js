@@ -5,7 +5,6 @@ const mysql = require('mysql');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const qrcodeTerminal = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
@@ -169,15 +168,12 @@ function createClient() {
   });
 
   newClient.on('qr', async (qr) => {
-    console.log('\n📸 Scan QR berikut untuk login WhatsApp:\n');
-    qrcodeTerminal.generate(qr, { small: true });
-
     try {
       qrDataUrl = await QRCode.toDataURL(qr, {
         width: 240,
         margin: 1
       });
-      console.log('🖼️ QR WhatsApp LAB siap ditampilkan di browser.');
+      console.log('QR WhatsApp siap. Buka browser ke http://localhost:9000');
     } catch (err) {
       console.error('❌ Gagal membuat QR browser:', err.message);
     }
