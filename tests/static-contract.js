@@ -16,10 +16,15 @@ const required = [
   ['.env.example', /LAB_GATEWAY_PORT=9000/],
   ['.env.example', /IJIN_GATEWAY_PORT=3000/],
   ['.env.example', /REMINDER_GATEWAY_PORT=3210/],
+  ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('disconnected'/],
+  ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('auth_failure'/],
+  ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('error'/]
 ];
 
 for (const [file, pattern] of required) {
-  const content = fs.readFileSync(path.join(root, file), 'utf8');
+  const full = path.join(root, file);
+  if (!fs.existsSync(full)) throw new Error('Missing contract file: ' + file);
+  const content = fs.readFileSync(full, 'utf8');
   if (!pattern.test(content)) throw new Error('Contract missing: ' + file);
 }
 
