@@ -57,15 +57,17 @@ class WhatsAppLifecycle extends EventEmitter {
 
   attachClient(client) {
     this.client = client;
+
     client.on('qr', async (qr) => {
       try {
-        if (this.onQr) await this.onQr(qr);
-        this.emit('qr', qr);
+        this.qrDataUrl = await this.onQr?.(qr) || null;
+        this.emit('qr', qr, this.qrDataUrl);
       } catch (error) {
         this.lastError = error.message || String(error);
         this.emit('error', error);
       }
     });
+
     client.on('authenticated', () => {
       this.qrDataUrl = null;
       this.lastError = null;
@@ -73,6 +75,7 @@ class WhatsAppLifecycle extends EventEmitter {
       this.emit('authenticated');
       this.emit('state', this.state);
     });
+
     client.on('ready', () => {
       this.qrDataUrl = null;
       this.lastError = null;
@@ -80,12 +83,14 @@ class WhatsAppLifecycle extends EventEmitter {
       this.emit('ready');
       this.emit('state', this.state);
     });
+
     client.on('auth_failure', (message) => {
       this.state = 'AUTH_FAILURE';
       this.lastError = String(message || 'Authentication failure');
       this.emit('auth_failure', message);
       this.emit('state', this.state);
     });
+
     client.on('disconnected', (reason) => {
       this.state = 'DISCONNECTED';
       this.qrDataUrl = null;
@@ -94,6 +99,7 @@ class WhatsAppLifecycle extends EventEmitter {
       this.emit('state', this.state);
       this.scheduleRecovery(reason);
     });
+
     client.on('change_state', (state) => {
       this.emit('change_state', state);
       if (state === 'CONNECTED') {
@@ -104,6 +110,7 @@ class WhatsAppLifecycle extends EventEmitter {
         this.emit('state', this.state);
       }
     });
+
     client.on('error', (error) => {
       this.lastError = error?.message || String(error);
       this.emit('error', error);
