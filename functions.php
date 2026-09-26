@@ -420,9 +420,14 @@ function patientCount(string $date, string $doctorCode, array $items): int
     return $cache[$cacheKey];
 }
 
-function buildReminderMessage(array $doctor, array $items, string $date): string
+function buildReminderMessage(
+    array $doctor,
+    array $items,
+    string $date,
+    ?array $sharedIndenBySchedule = null
+): string
 {
-    $indenBySchedule = indenCountsBySchedule($date, $items);
+    $indenBySchedule = $sharedIndenBySchedule ?? indenCountsBySchedule($date, $items);
     $primaryScheduleId = (int) ($items[0]['jadwal_id'] ?? 0);
     $primaryInden = $primaryScheduleId > 0 ? (int) ($indenBySchedule[$primaryScheduleId] ?? 0) : 0;
     $additionalItems = array_slice($items, 1);
@@ -468,11 +473,17 @@ function buildReminderMessage(array $doctor, array $items, string $date): string
     return sanitizeReminderMessage($message);
 }
 
-function createReminder(array $doctor, array $items, string $date): int
+function createReminder(
+    array $doctor,
+    array $items,
+    string $date,
+    ?array $sharedIndenBySchedule = null
+): int
 {
     $pdo = db();
     $localDoctorId = (string) $doctor['doctor_id'];
-    $message = buildReminderMessage($doctor, $items, $date);
+    $message = buildReminderMessage($doctor, $items, $date, $sharedIndenBySchedule);
+
     $existsStatement = $pdo->prepare("
         SELECT id, status, message
         FROM reminders
@@ -480,32 +491,123 @@ function createReminder(array $doctor, array $items, string $date): int
         LIMIT 1
     ");
     $existsStatement->execute([$date, $localDoctorId, 'HARI_INI']);
+
     $existingReminder = $existsStatement->fetch();
+
     if ($existingReminder) {
         if ($existingReminder['message'] !== $message) {
             $updateStatement = $pdo->prepare('UPDATE reminders SET message = ? WHERE id = ?');
             $updateStatement->execute([$message, $existingReminder['id']]);
         }
+
         return (int) $existingReminder['id'];
     }
+
     $insertStatement = $pdo->prepare("
         INSERT INTO reminders (doctor_id, tanggal, reminder_type, message, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?)
     ");
     $insertStatement->execute([$localDoctorId, $date, 'HARI_INI', $message, 'READY', date('Y-m-d H:i:s')]);
+
     return (int) $pdo->lastInsertId();
 }
 
 function ensureReminders(string $date, ?array $scheduleRows = null): array
 {
     $rows = $scheduleRows ?? schedulesFor($date);
+
+    if (!$rows) {
+        return [];
+    }
+
     $groups = [];
+    $doctorIds = [];
+
     foreach ($rows as $row) {
-        $groups[$row['doctor_id']][] = $row;
+        $doctorId = trim((string) ($row['doctor_id'] ?? ''));
+
+        if ($doctorId === '') {
+            continue;
+        }
+
+        $groups[$doctorId][] = $row;
+        $doctorIds[$doctorId] = $doctorId;
     }
-    foreach ($groups as $items) {
-        createReminder($items[0], $items, $date);
+
+    if (!$groups) {
+        return $rows;
     }
+
+    // Ambil seluruh jumlah inden sekali untuk semua jadwal hari ini,
+    // bukan satu query per dokter.
+    $indenBySchedule = indenCountsBySchedule($date, $rows);
+
+    $pdo = db();
+
+    $placeholders = implode(',', array_fill(0, count($doctorIds), '?'));
+    $params = [$date, 'HARI_INI'];
+
+    foreach ($doctorIds as $doctorId) {
+        $params[] = $doctorId;
+    }
+
+    $existingStatement = $pdo->prepare("
+        SELECT id, doctor_id, status, message
+        FROM reminders
+        WHERE tanggal = ?
+          AND reminder_type = ?
+          AND doctor_id IN ({$placeholders})
+    ");
+    $existingStatement->execute($params);
+
+    $existing = [];
+
+    foreach ($existingStatement->fetchAll() as $reminder) {
+        $existing[(string) $reminder['doctor_id']] = $reminder;
+    }
+
+    $updateStatement = $pdo->prepare(
+        'UPDATE reminders SET message = ? WHERE id = ?'
+    );
+
+    $insertStatement = $pdo->prepare("
+        INSERT INTO reminders
+            (doctor_id, tanggal, reminder_type, message, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    $createdAt = date('Y-m-d H:i:s');
+
+    foreach ($groups as $doctorId => $items) {
+        $doctor = $items[0];
+        $message = buildReminderMessage(
+            $doctor,
+            $items,
+            $date,
+            $indenBySchedule
+        );
+
+        if (isset($existing[$doctorId])) {
+            if ((string) $existing[$doctorId]['message'] !== $message) {
+                $updateStatement->execute([
+                    $message,
+                    (int) $existing[$doctorId]['id']
+                ]);
+            }
+
+            continue;
+        }
+
+        $insertStatement->execute([
+            $doctorId,
+            $date,
+            'HARI_INI',
+            $message,
+            'READY',
+            $createdAt
+        ]);
+    }
+
     return $rows;
 }
 
