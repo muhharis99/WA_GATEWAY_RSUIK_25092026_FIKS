@@ -1,19 +1,16 @@
 'use strict';
 
-const express = require('express');
 const { createWhatsAppLifecycle } = require('../whatsapp/createClient');
 const ReminderGatewayService = require('../services/ReminderGatewayService');
 const { createGatewayController } = require('../controllers/GatewayController');
 const { renderGatewayPage } = require('../http/gatewayUi');
+const { createApp } = require('../http/createApp');
 const { bindShutdownHandlers, gracefulShutdown } = require('../http/gatewayServer');
 const config = require('../config/env');
 
 const lifecycle = createWhatsAppLifecycle('dokter-reminder', '.wwebjs_auth');
 const service = new ReminderGatewayService(lifecycle);
-const app = express();
-
-app.disable('x-powered-by');
-app.use(express.json({ limit: config.bodyLimits.reminder }));
+const app = createApp({ bodyLimit: config.bodyLimits.reminder, corsOrigin: config.corsOrigin });
 
 lifecycle.on('qr', () => {});
 lifecycle.on('error', (error) => console.error('[REMINDER] WhatsApp error:', error.message || error));
