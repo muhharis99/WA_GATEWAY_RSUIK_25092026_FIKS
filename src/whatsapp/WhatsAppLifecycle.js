@@ -13,6 +13,8 @@ class WhatsAppLifecycle extends EventEmitter {
     this.lastError = null;
     this.initializing = null;
     this.recoveryTimer = null;
+    this.authenticatedWatchTimer = null;
+    this.authenticatedReadyTimeoutMs = options.authenticatedReadyTimeoutMs || 90000;
     this.shuttingDown = false;
     this.maxAttempts = options.maxAttempts || 4;
     this.retryDelayMs = options.retryDelayMs || 5000;
@@ -74,9 +76,11 @@ class WhatsAppLifecycle extends EventEmitter {
       this.state = 'AUTHENTICATED';
       this.emit('authenticated');
       this.emit('state', this.state);
+      this.watchAuthenticatedReady(client);
     });
 
     client.on('ready', () => {
+      this.clearAuthenticatedWatch();
       this.qrDataUrl = null;
       this.lastError = null;
       this.state = 'READY';
@@ -118,8 +122,69 @@ class WhatsAppLifecycle extends EventEmitter {
     });
   }
 
+  watchAuthenticatedReady(client) {
+    this.clearAuthenticatedWatch();
+
+    const startedAt = Date.now();
+
+    const probe = async () => {
+      if (this.shuttingDown || this.client !== client || this.state === 'READY') {
+        this.clearAuthenticatedWatch();
+        return;
+      }
+
+      try {
+        const state = await client.getState();
+
+        if (state === 'CONNECTED') {
+          this.clearAuthenticatedWatch();
+          this.qrDataUrl = null;
+          this.lastError = null;
+          this.state = 'READY';
+          this.emit('ready');
+          this.emit('state', this.state);
+          return;
+        }
+
+        if (state === 'CONFLICT') {
+          this.lastError = 'WhatsApp session conflict';
+          this.emit('state', this.state, { connectionState: state });
+        }
+      } catch (error) {
+        this.lastError = error.message || String(error);
+      }
+
+      if (Date.now() - startedAt >= this.authenticatedReadyTimeoutMs) {
+        this.clearAuthenticatedWatch();
+        const error = new Error(
+          'WhatsApp authenticated tetapi tidak mencapai CONNECTED/READY dalam ' +
+          Math.round(this.authenticatedReadyTimeoutMs / 1000) +
+          ' detik.'
+        );
+        this.lastError = error.message;
+        this.emit('initialization_error', error, { phase: 'authenticated_watchdog' });
+        this.scheduleRecovery(error);
+        return;
+      }
+
+      this.authenticatedWatchTimer = setTimeout(probe, 2000);
+      this.authenticatedWatchTimer.unref?.();
+    };
+
+    this.authenticatedWatchTimer = setTimeout(probe, 1500);
+    this.authenticatedWatchTimer.unref?.();
+  }
+
+  clearAuthenticatedWatch() {
+    if (this.authenticatedWatchTimer) {
+      clearTimeout(this.authenticatedWatchTimer);
+    }
+    this.authenticatedWatchTimer = null;
+  }
+
   scheduleRecovery(reason = '') {
     if (this.shuttingDown || this.recoveryTimer) return;
+    this.clearAuthenticatedWatch();
     this.recoveryTimer = setTimeout(async () => {
       this.recoveryTimer = null;
       try {
@@ -168,6 +233,7 @@ class WhatsAppLifecycle extends EventEmitter {
     if (this.recoveryTimer) clearTimeout(this.recoveryTimer);
     this.recoveryTimer = null;
     await this.safeDestroy();
+    this.clearAuthenticatedWatch();
     this.state = 'STOPPED';
     this.emit('state', this.state);
   }
