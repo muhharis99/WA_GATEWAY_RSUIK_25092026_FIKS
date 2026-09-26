@@ -13,13 +13,14 @@ const CHAT_INCOMING_URL = process.env.CHAT_INCOMING_URL ||
 const CHAT_IDENTITY_FILE = path.join(__dirname, '.chat_identity_map.json');
 
 app.disable('x-powered-by');
-app.use(cors());
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '128kb' }));
 
 let waState = 'STARTING';
 let qrDataUrl = null;
 let lastError = null;
 let incomingQueueProcessing = false;
+const incomingQueueTimer = null;
 
 const incomingQueue = new Map();
 const completedIncoming = new Map();
