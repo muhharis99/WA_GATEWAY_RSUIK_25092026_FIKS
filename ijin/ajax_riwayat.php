@@ -3,24 +3,25 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 require_once dirname(__DIR__) . '/functions.php';
 
+$draw = isset($_POST['draw']) ? (int) $_POST['draw'] : 1;
+$start = max(0, isset($_POST['start']) ? (int) $_POST['start'] : 0);
+$length = isset($_POST['length']) ? (int) $_POST['length'] : 25;
+
+if ($length < 1) {
+    $length = 25;
+}
+
+if ($length > 100) {
+    $length = 100;
+}
+
 try {
-    // IJIN mengikuti project sumber: 192.168.0.33 / rsiklaten
+    // Sumber IJIN: 192.168.0.33 / rsiklaten / batal_praktek_detil_wa
     $pdo = get_db('ijin');
-
-    $draw = isset($_POST['draw']) ? (int) $_POST['draw'] : 1;
-    $start = max(0, isset($_POST['start']) ? (int) $_POST['start'] : 0);
-    $length = isset($_POST['length']) ? (int) $_POST['length'] : 25;
-
-    if ($length < 1) {
-        $length = 25;
-    }
-
-    if ($length > 100) {
-        $length = 100;
-    }
 
     $noReg = trim((string) ($_POST['no_reg'] ?? ''));
     $noTelp = trim((string) ($_POST['no_telp'] ?? ''));
@@ -55,10 +56,15 @@ try {
     if ($tglKirim !== '') {
         $date = DateTime::createFromFormat('Y-m-d', $tglKirim);
 
-        if ($date && $date->format('Y-m-d') === $tglKirim) {
+        if (!$date || $date->format('Y-m-d') !== $tglKirim) {
+            $date = DateTime::createFromFormat('d-m-Y', $tglKirim);
+        }
+
+        if ($date) {
+            $normalizedDate = $date->format('Y-m-d');
             $conditions[] = 'b.tgl_kirim_pesan >= ? AND b.tgl_kirim_pesan < DATE_ADD(?, INTERVAL 1 DAY)';
-            $params[] = $tglKirim . ' 00:00:00';
-            $params[] = $tglKirim . ' 00:00:00';
+            $params[] = $normalizedDate . ' 00:00:00';
+            $params[] = $normalizedDate . ' 00:00:00';
         }
     }
 
@@ -69,15 +75,31 @@ try {
 
     $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
-    $recordsTotal = (int) $pdo->query(
-        'SELECT COUNT(*) FROM batal_praktek_detil_wa'
-    )->fetchColumn();
+    // Hindari COUNT(*) penuh dua kali pada setiap request awal.
+    $totalStmt = $pdo->query("
+        SELECT TABLE_ROWS
+        FROM information_schema.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'batal_praktek_detil_wa'
+        LIMIT 1
+    ");
+    $recordsTotal = (int) ($totalStmt->fetchColumn() ?: 0);
 
-    $filterStmt = $pdo->prepare(
-        "SELECT COUNT(*) FROM batal_praktek_detil_wa b {$where}"
-    );
-    $filterStmt->execute($params);
-    $recordsFiltered = (int) $filterStmt->fetchColumn();
+    if ($recordsTotal === 0) {
+        $recordsTotal = (int) $pdo->query(
+            'SELECT COUNT(*) FROM batal_praktek_detil_wa'
+        )->fetchColumn();
+    }
+
+    if ($where === '') {
+        $recordsFiltered = $recordsTotal;
+    } else {
+        $filterStmt = $pdo->prepare(
+            "SELECT COUNT(*) FROM batal_praktek_detil_wa b {$where}"
+        );
+        $filterStmt->execute($params);
+        $recordsFiltered = (int) $filterStmt->fetchColumn();
+    }
 
     $sql = "
         SELECT
@@ -101,21 +123,23 @@ try {
     $rows = [];
 
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-        if ((string) $row['status'] === '1') {
+        $statusValue = (string) ($row['status'] ?? '');
+
+        if ($statusValue === '1') {
             $badge = "<span class='badge-status sent'><i class='bi bi-check-circle-fill'></i> Terkirim</span>";
-        } elseif ((string) $row['status'] === '2') {
+        } elseif ($statusValue === '2') {
             $badge = "<span class='badge-status failed'><i class='bi bi-x-circle-fill'></i> Gagal</span>";
         } else {
             $badge = "<span class='badge-status unknown'><i class='bi bi-dash-circle'></i> N/A</span>";
         }
 
         $rows[] = [
-            "<span style='font-size:.8rem;font-weight:600;'>" . htmlspecialchars((string) $row['no_reg'], ENT_QUOTES, 'UTF-8') . "</span>",
-            htmlspecialchars((string) $row['no_hp'], ENT_QUOTES, 'UTF-8'),
-            "<span style='font-weight:500;'>" . htmlspecialchars((string) $row['nama_pasien'], ENT_QUOTES, 'UTF-8') . "</span>",
-            "<span style='font-size:.8rem;color:#555;'>" . nl2br(htmlspecialchars((string) $row['pesan'], ENT_QUOTES, 'UTF-8')) . "</span>",
-            "<span style='background:#e8f5f0;color:#0d6e4f;padding:.2rem .6rem;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap;'>" . htmlspecialchars((string) $row['nama_poli'], ENT_QUOTES, 'UTF-8') . "</span>",
-            "<span style='font-size:.85rem;'>" . htmlspecialchars((string) $row['nama_dokter'], ENT_QUOTES, 'UTF-8') . "</span>",
+            "<span style='font-size:.8rem;font-weight:600;'>" . htmlspecialchars((string) ($row['no_reg'] ?? ''), ENT_QUOTES, 'UTF-8') . "</span>",
+            htmlspecialchars((string) ($row['no_hp'] ?? ''), ENT_QUOTES, 'UTF-8'),
+            "<span style='font-weight:500;'>" . htmlspecialchars((string) ($row['nama_pasien'] ?? ''), ENT_QUOTES, 'UTF-8') . "</span>",
+            "<span style='font-size:.8rem;color:#555;'>" . nl2br(htmlspecialchars((string) ($row['pesan'] ?? ''), ENT_QUOTES, 'UTF-8')) . "</span>",
+            "<span style='background:#e8f5f0;color:#0d6e4f;padding:.2rem .6rem;border-radius:20px;font-size:.75rem;font-weight:600;white-space:nowrap;'>" . htmlspecialchars((string) ($row['nama_poli'] ?? ''), ENT_QUOTES, 'UTF-8') . "</span>",
+            "<span style='font-size:.85rem;'>" . htmlspecialchars((string) ($row['nama_dokter'] ?? ''), ENT_QUOTES, 'UTF-8') . "</span>",
             "<span style='font-size:.82rem;white-space:nowrap;'>" . htmlspecialchars((string) ($row['tgl_kirim_pesan'] ?? ''), ENT_QUOTES, 'UTF-8') . "</span>",
             $badge
         ];
@@ -131,7 +155,7 @@ try {
     http_response_code(500);
 
     echo json_encode([
-        'draw' => isset($_POST['draw']) ? (int) $_POST['draw'] : 1,
+        'draw' => $draw,
         'recordsTotal' => 0,
         'recordsFiltered' => 0,
         'data' => [],
