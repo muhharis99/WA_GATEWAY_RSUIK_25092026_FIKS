@@ -333,5 +333,60 @@ function h2($value): string
 })(window.jQuery);
 </script>
 <script src="assets/js/master.js?v=20260926-03"></script>
+<script>
+(function () {
+    const dot = document.getElementById('gatewayDot');
+    if (!dot) return;
+
+    const baseUrl = 'http://' + window.location.hostname + ':3000';
+
+    async function refreshIjinGatewayDot() {
+        try {
+            const response = await fetch(baseUrl + '/health', {
+                cache: 'no-store'
+            });
+
+            const data = await response.json();
+            dot.className = 'gateway-dot';
+
+            if (data.ready || data.state === 'READY') {
+                dot.classList.add('ready');
+            } else if (
+                data.state === 'ERROR' ||
+                data.state === 'AUTH_FAILURE'
+            ) {
+                dot.classList.add('error');
+            }
+        } catch (error) {
+            dot.className = 'gateway-dot error';
+        }
+    }
+
+    async function refreshIjinGatewayDot() {
+        try {
+            const response = await fetch(baseUrl + '/health', {
+                cache: 'no-store'
+            });
+
+            const data = await response.json();
+            dot.className = 'gateway-dot';
+
+            if (data.ready || data.state === 'READY') {
+                dot.classList.add('ready');
+            } else if (
+                data.state === 'ERROR' ||
+                data.state === 'AUTH_FAILURE'
+            ) {
+                dot.classList.add('error');
+            }
+        } catch (error) {
+            dot.className = 'gateway-dot error';
+        }
+    }
+
+    refreshIjinGatewayDot();
+    setInterval(refreshIjinGatewayDot, 5000);
+})();
+</script>
 </body>
 </html>
