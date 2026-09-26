@@ -1,27 +1,6 @@
-const navbarFixLink = document.createElement('link');
-navbarFixLink.rel = 'stylesheet';
-navbarFixLink.href = 'assets/navbar-fix.css';
-document.head.appendChild(navbarFixLink);
+// Legacy CSS injections removed: the referenced files are not part of the bundle
+// and caused unnecessary 404 requests on every page (especially /ijin/).
 
-const rsiReferenceLink = document.createElement('link');
-rsiReferenceLink.rel = 'stylesheet';
-rsiReferenceLink.href = 'assets/rsi-reference.css';
-document.head.appendChild(rsiReferenceLink);
-
-const footerFixLink = document.createElement('link');
-footerFixLink.rel = 'stylesheet';
-footerFixLink.href = 'assets/footer-fix.css';
-document.head.appendChild(footerFixLink);
-
-const modalFixLink = document.createElement('link');
-modalFixLink.rel = 'stylesheet';
-modalFixLink.href = 'assets/modal-fix.css';
-document.head.appendChild(modalFixLink);
-
-const noHoverLink = document.createElement('link');
-noHoverLink.rel = 'stylesheet';
-noHoverLink.href = 'assets/no-hover.css';
-document.head.appendChild(noHoverLink);
 
 const sweetAlertReady = new Promise(function (resolve) {
     if (window.Swal) {
