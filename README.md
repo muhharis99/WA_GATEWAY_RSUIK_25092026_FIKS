@@ -13,7 +13,6 @@ Tampilan web mengikuti basis Reminder Dokter.
 - /lab/report.php — laporan LAB + filter tanggal + PDF
 - /ijin/index.php — menu Ijin WA
 - /ijin/report.php — laporan Ijin + filter tanggal + PDF
-- /chat_dokter.php — Chat Dokter
 - /master.php — Master Data
 - /settings.php — Template
 - /report.php — laporan Reminder + filter tanggal + PDF
@@ -46,7 +45,7 @@ Koneksi database dipisahkan sesuai tiga project sumber:
 
 ## Gateway
 Port lama tetap dipertahankan:
-- 3210 Reminder + Chat
+- 3210 Reminder
 - 9000 LAB
 - 3000 IJIN
 
