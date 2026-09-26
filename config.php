@@ -11,6 +11,12 @@ declare(strict_types=1);
  * 3. Safe compatibility defaults for non-secret connection settings
  *
  * Database credentials are intentionally not stored in source code.
+ * The original projects use:
+ * - local      -> 192.168.0.14 / dokter_reminder
+ * - rsi_byl    -> 192.168.0.14 / rsi_byl
+ * - rsiklaten  -> 192.168.0.67 / db_67
+ * - rme        -> 192.168.0.33 / rme
+ * - LAB / IJIN -> 192.168.0.33 / rsiklaten
  */
 
 function loadProjectEnv(string $file): void
@@ -83,13 +89,6 @@ $env = static function (string $key, ?string $fallback = null): string {
 
     return '';
 };
-
-$requiredCredentialKeys = [
-    'DB_LOCAL_USER',
-    'DB_LOCAL_PASS',
-    'DB_RSI_BYL_USER',
-    'DB_RSI_BYL_PASS',
-];
 
 $databases = [
     'local' => [
