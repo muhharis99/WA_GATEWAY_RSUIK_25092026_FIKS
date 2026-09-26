@@ -286,6 +286,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </div>
 </main>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/v/bs5/dt-3.0.2/r-4.0.2/datatables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -293,16 +294,34 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <script src="../assets/back-to-top.js"></script>
 <script>
 $(function () {
-    flatpickr('#startDate', {
+    var localeId = (flatpickr.l10ns && flatpickr.l10ns.id)
+        ? flatpickr.l10ns.id
+        : { firstDayOfWeek: 1 };
+
+    var startPicker = flatpickr('#startDate', {
         dateFormat: 'd-m-Y',
-        locale: 'id',
-        disableMobile: true
+        locale: localeId,
+        allowInput: true,
+        clickOpens: true,
+        disableMobile: true,
+        position: 'auto'
     });
 
-    flatpickr('#endDate', {
+    var endPicker = flatpickr('#endDate', {
         dateFormat: 'd-m-Y',
-        locale: 'id',
-        disableMobile: true
+        locale: localeId,
+        allowInput: true,
+        clickOpens: true,
+        disableMobile: true,
+        position: 'auto'
+    });
+
+    $('#startDate, #endDate').on('click', function () {
+        if (this.id === 'startDate') {
+            startPicker.open();
+        } else {
+            endPicker.open();
+        }
     });
 
     $('#reportTable').DataTable({
