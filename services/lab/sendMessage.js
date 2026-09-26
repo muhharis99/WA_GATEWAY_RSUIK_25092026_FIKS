@@ -66,7 +66,7 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 let client = null;
 let clientReady = false;
 let isResetting = false;
-let initializing = false;
+let initializing = null;
 
 const CONFIG = {
   PORT: 9000,
