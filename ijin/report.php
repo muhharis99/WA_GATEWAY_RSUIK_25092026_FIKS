@@ -147,6 +147,21 @@ $pdfQuery = http_build_query([
     </nav>
 
 <main class="container py-4">
+<div class="card shadow-sm border-0 mb-3">
+<div class="card-body">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+<div>
+<div class="fw-semibold mb-1">Pilih Jenis Laporan</div>
+<div class="text-secondary small">Pilih laporan yang ingin ditampilkan atau dicetak.</div>
+</div>
+<div class="d-flex flex-wrap gap-2">
+<a href="../report.php" class="btn btn-outline-success">Reminder Dokter</a>
+<a href="report.php" class="btn btn-warning text-dark">Ijin Dokter</a>
+</div>
+</div>
+</div>
+</div>
+
 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
 <div>
 <span class="badge text-bg-warning-subtle text-warning-emphasis mb-2">LAPORAN IJIN DOKTER</span>
