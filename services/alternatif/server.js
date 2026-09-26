@@ -125,7 +125,7 @@ async function startAllServices() {
 
     // Beri waktu Chromium / WhatsApp Web service sebelumnya
     // menyelesaikan startup sebelum service berikutnya dimulai.
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 20000));
   }
 }
 
