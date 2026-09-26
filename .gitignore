@@ -1,8 +1,12 @@
 node_modules/
 vendor/
 .wwebjs_auth/
+.wwebjs_auth_lab/
+.wwebjs_auth_ijin/
 .wwebjs_cache/
 .chat_identity_map.json
 tokens/
 .env
 npm-debug.log*
+.DS_Store
+coverage/
