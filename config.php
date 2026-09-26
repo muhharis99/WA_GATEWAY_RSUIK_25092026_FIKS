@@ -144,6 +144,19 @@ $databases = [
     ]
 ];
 
+// Koneksi IJIN/LAB selalu mengarah ke DB sumber: 192.168.0.33 / rsiklaten.
+
+function databaseConfig(string $name): array
+{
+    global $databases;
+
+    if (!isset($databases[$name])) {
+        throw new RuntimeException("Konfigurasi database '$name' tidak ditemukan.");
+    }
+
+    return $databases[$name];
+}
+
 const APP_NAME = 'DokterReminder';
 
 const DEFAULT_TEMPLATE = "Assalamualaikum, {{nama_dokter}}.
