@@ -5,9 +5,9 @@ const path = require('path');
 
 const projectRoot = path.resolve(__dirname, '../..');
 const services = [
-  { name: 'REMINDER', script: path.join(projectRoot, 'src/entrypoints/reminder.js'), port: 3210, healthUrl: 'http://127.0.0.1:3210/status' },
-  { name: 'LAB', script: path.join(projectRoot, 'src/entrypoints/lab.js'), port: 9000, healthUrl: 'http://127.0.0.1:9000/health' },
-  { name: 'IJIN', script: path.join(projectRoot, 'src/entrypoints/ijin.js'), port: 3000, healthUrl: 'http://127.0.0.1:3000/health' }
+  { name: 'REMINDER', script: path.join(projectRoot, 'services/reminder/server.js'), port: 3210 },
+  { name: 'LAB', script: path.join(projectRoot, 'services/lab/server.js'), port: 9000 },
+  { name: 'IJIN', script: path.join(projectRoot, 'services/ijin/server.js'), port: 3000 }
 ];
 
 const children = new Map();
