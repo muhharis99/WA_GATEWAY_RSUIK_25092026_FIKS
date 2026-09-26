@@ -22,6 +22,9 @@ const required = [
   ['src/whatsapp/createClient.js', /resolveBrowserExecutable/],
   ['src/whatsapp/createClient.js', /webVersionCache: \{ type: 'none' \}/],
   ['src/whatsapp/WhatsAppLifecycle.js', /watchAuthenticatedReady/],
+  ['src/services/ReminderGatewayService.js', /sendSeen: false/],
+  ['src/services/IjinGatewayService.js', /sendSeen: false/],
+  ['src/services/LabGatewayService.js', /sendSeen: false/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('auth_failure'/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('error'/]
 ];
