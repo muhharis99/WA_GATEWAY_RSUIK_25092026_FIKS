@@ -177,12 +177,32 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <div class="card-body">
 <form method="get" class="row g-3 align-items-end">
 <div class="col-md-3">
-<label class="form-label">Tanggal Awal</label>
-<input type="text" id="startDate" name="start_date" class="form-control" value="<?= e(date('d-m-Y', strtotime($startDate))) ?>" autocomplete="off">
+<label class="form-label" for="startDate">Tanggal Awal</label>
+<div class="input-group">
+<input type="text" id="startDate" name="start_date" class="form-control" value="<?= e(date('d-m-Y', strtotime($startDate))) ?>" autocomplete="off" placeholder="DD-MM-YYYY">
+<button class="btn btn-outline-secondary" id="startDateButton" type="button" aria-label="Pilih tanggal awal">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="3" y="4" width="18" height="18" rx="2"></rect>
+<line x1="16" y1="2" x2="16" y2="6"></line>
+<line x1="8" y1="2" x2="8" y2="6"></line>
+<line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+</button>
+</div>
 </div>
 <div class="col-md-3">
-<label class="form-label">Tanggal Akhir</label>
-<input type="text" id="endDate" name="end_date" class="form-control" value="<?= e(date('d-m-Y', strtotime($endDate))) ?>" autocomplete="off">
+<label class="form-label" for="endDate">Tanggal Akhir</label>
+<div class="input-group">
+<input type="text" id="endDate" name="end_date" class="form-control" value="<?= e(date('d-m-Y', strtotime($endDate))) ?>" autocomplete="off" placeholder="DD-MM-YYYY">
+<button class="btn btn-outline-secondary" id="endDateButton" type="button" aria-label="Pilih tanggal akhir">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<rect x="3" y="4" width="18" height="18" rx="2"></rect>
+<line x1="16" y1="2" x2="16" y2="6"></line>
+<line x1="8" y1="2" x2="8" y2="6"></line>
+<line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+</button>
+</div>
 </div>
 <div class="col-md-2">
 <label class="form-label">Status</label>
@@ -316,12 +336,12 @@ $(function () {
         position: 'auto'
     });
 
-    $('#startDate, #endDate').on('click', function () {
-        if (this.id === 'startDate') {
-            startPicker.open();
-        } else {
-            endPicker.open();
-        }
+    $('#startDate, #startDateButton').on('click', function () {
+        startPicker.open();
+    });
+
+    $('#endDate, #endDateButton').on('click', function () {
+        endPicker.open();
     });
 
     $('#reportTable').DataTable({
