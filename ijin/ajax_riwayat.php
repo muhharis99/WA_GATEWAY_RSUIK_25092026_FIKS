@@ -7,6 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once dirname(__DIR__) . '/functions.php';
 
 try {
+    // IJIN mengikuti project sumber: 192.168.0.33 / rsiklaten
     $pdo = get_db('ijin');
 
     $draw = isset($_POST['draw']) ? (int) $_POST['draw'] : 1;
