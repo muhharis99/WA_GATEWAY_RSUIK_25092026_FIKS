@@ -28,6 +28,7 @@ let waState = 'STARTING';
 let qrDataUrl = null;
 let lastError = null;
 let incomingQueueProcessing = false;
+let reminderRecoveryScheduled = false;
 
 const incomingQueue = new Map();
 const completedIncoming = new Map();
@@ -604,7 +605,46 @@ client.on('disconnected', (reason) => {
     waState = 'DISCONNECTED';
     qrDataUrl = null;
     lastError = String(reason || 'Disconnected');
-    console.warn('WhatsApp disconnected:', reason);
+
+    console.warn(
+        'WhatsApp disconnected. Service tetap berjalan dan recovery akan dicoba:',
+        reason
+    );
+
+    if (reminderRecoveryScheduled) {
+        return;
+    }
+
+    reminderRecoveryScheduled = true;
+
+    setTimeout(async () => {
+        try {
+            waState = 'STARTING';
+            lastError = null;
+
+            try {
+                await client.destroy();
+            } catch (destroyError) {
+                console.warn(
+                    '[REMINDER] destroy saat recovery:',
+                    destroyError.message || destroyError
+                );
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await initializeReminderWithRetry();
+        } catch (error) {
+            waState = 'ERROR';
+            lastError = error.message || String(error);
+
+            console.error(
+                '[REMINDER] Recovery WhatsApp gagal:',
+                lastError
+            );
+        } finally {
+            reminderRecoveryScheduled = false;
+        }
+    }, 3000).unref();
 });
 
 client.on('message', (message) => {
