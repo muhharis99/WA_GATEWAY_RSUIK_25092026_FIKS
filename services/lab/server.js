@@ -17,8 +17,8 @@ app.use(bodyParser.urlencoded({ extended: true, limit: process.env.LAB_BODY_LIMI
 // Saat ini endpoint /send tidak membutuhkan query ke database ini.
 const db = mysql.createPool({
   host: process.env.LAB_DB_HOST || '192.168.0.33',
-  user: process.env.LAB_DB_USER || 'admin',
-  password: process.env.LAB_DB_PASS || 'admin3dp',
+  user: process.env.LAB_DB_USER || '',
+  password: process.env.LAB_DB_PASS || '',
   database: process.env.LAB_DB_NAME || 'rsiklaten',
   connectionLimit: 10,
 });
