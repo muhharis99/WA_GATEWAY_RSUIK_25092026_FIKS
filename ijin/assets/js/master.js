@@ -67,7 +67,20 @@ $(function () {
                 error: function (xhr, status, errorThrown) {
                     let message = 'Terjadi kesalahan saat mengambil riwayat.';
 
-                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                    if (xhr.responseJSON && xhr.responseJSON.detail) {
+                        message =
+                            (xhr.responseJSON.error || 'PHP Error') +
+                            '\n\n' +
+                            xhr.responseJSON.detail;
+
+                        if (xhr.responseJSON.file) {
+                            message +=
+                                '\n\nFile: ' +
+                                xhr.responseJSON.file +
+                                ':' +
+                                (xhr.responseJSON.line || '?');
+                        }
+                    } else if (xhr.responseJSON && xhr.responseJSON.error) {
                         message = xhr.responseJSON.error;
                     } else if (status === 'timeout') {
                         message = 'Request riwayat timeout. Database terlalu lambat atau service belum merespons.';
