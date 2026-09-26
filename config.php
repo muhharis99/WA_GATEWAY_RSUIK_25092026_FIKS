@@ -79,15 +79,14 @@ $env = static function (string $key, string $fallback = ''): string {
 };
 
 /*
- * Fallback sengaja mengikuti konfigurasi repo Reminder asli.
- * Dengan demikian aplikasi tetap berjalan walaupun .env belum dibuat.
+ * Credential wajib disediakan melalui environment/.env. Host/database default dipertahankan untuk compatibility.
  */
 $databases = [
     'local' => [
         'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_LOCAL_PORT', '3306'),
-        'user' => $env('DB_LOCAL_USER', 'admin3dp'),
-        'pass' => $env('DB_LOCAL_PASS', '4dm1n3dp'),
+        'user' => $env('DB_LOCAL_USER', ''),
+        'pass' => $env('DB_LOCAL_PASS', ''),
         'name' => $env('DB_LOCAL_NAME', 'dokter_reminder')
     ],
 
@@ -95,15 +94,15 @@ $databases = [
         'host' => $env('DB_RSIKLATEN_HOST', '192.168.0.67'),
         'port' => (int) $env('DB_RSIKLATEN_PORT', '3306'),
         'user' => $env('DB_RSIKLATEN_USER', 'admin'),
-        'pass' => $env('DB_RSIKLATEN_PASS', 'admin3dp'),
+        'pass' => $env('DB_RSIKLATEN_PASS', ''),
         'name' => $env('DB_RSIKLATEN_NAME', 'db_67')
     ],
 
     'rsi_byl' => [
         'host' => $env('DB_RSI_BYL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_RSI_BYL_PORT', '3306'),
-        'user' => $env('DB_RSI_BYL_USER', 'admin3dp'),
-        'pass' => $env('DB_RSI_BYL_PASS', '4dm1n3dp'),
+        'user' => $env('DB_RSI_BYL_USER', ''),
+        'pass' => $env('DB_RSI_BYL_PASS', ''),
         'name' => $env('DB_RSI_BYL_NAME', 'rsi_byl')
     ],
 
@@ -111,7 +110,7 @@ $databases = [
         'host' => $env('DB_RME_HOST', '192.168.0.33'),
         'port' => (int) $env('DB_RME_PORT', '3306'),
         'user' => $env('DB_RME_USER', 'admin'),
-        'pass' => $env('DB_RME_PASS', 'admin3dp'),
+        'pass' => $env('DB_RME_PASS', ''),
         'name' => $env('DB_RME_NAME', 'rme')
     ],
 
@@ -120,7 +119,7 @@ $databases = [
         'host' => $env('LAB_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('LAB_DB_PORT', '3306'),
         'user' => $env('LAB_DB_USER', 'admin'),
-        'pass' => $env('LAB_DB_PASS', 'admin3dp'),
+        'pass' => $env('LAB_DB_PASS', ''),
         'name' => $env('LAB_DB_NAME', 'rsiklaten')
     ],
 
@@ -129,7 +128,7 @@ $databases = [
         'host' => $env('IJIN_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('IJIN_DB_PORT', '3306'),
         'user' => $env('IJIN_DB_USER', 'admin'),
-        'pass' => $env('IJIN_DB_PASS', 'admin3dp'),
+        'pass' => $env('IJIN_DB_PASS', ''),
         'name' => $env('IJIN_DB_NAME', 'rsiklaten')
     ]
 ];
