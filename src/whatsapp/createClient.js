@@ -7,6 +7,52 @@ const QRCode = require('qrcode');
 const WhatsAppLifecycle = require('./WhatsAppLifecycle');
 const { projectRoot } = require('../config/env');
 
+function getBrowserCandidates() {
+  const candidates = [];
+
+  if (process.env.CHROME_EXECUTABLE_PATH) {
+    candidates.push(process.env.CHROME_EXECUTABLE_PATH);
+  }
+
+  if (process.platform === 'win32') {
+    const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const localAppData = process.env.LOCALAPPDATA || '';
+
+    candidates.push(
+      path.join(programFiles, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(programFilesX86, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(localAppData, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(programFiles, 'Chromium', 'Application', 'chrome.exe')
+    );
+  }
+
+  if (process.platform === 'linux') {
+    candidates.push(
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser'
+    );
+  }
+
+  if (process.platform === 'darwin') {
+    candidates.push(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium'
+    );
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function resolveBrowserExecutable() {
+  const candidates = getBrowserCandidates();
+  const found = candidates.find((candidate) => fs.existsSync(candidate));
+
+  return found || null;
+}
+
 function patchWhatsAppWebMediaBug() {
   const utilsPath = path.join(
     projectRoot,
@@ -51,12 +97,24 @@ function createWWebClient(clientId, authDir, options = {}) {
     patchWhatsAppWebMediaBug();
   }
 
+  const executablePath = resolveBrowserExecutable();
+
+  if (executablePath) {
+    console.log('[WHATSAPP] Browser executable:', executablePath);
+  } else {
+    console.warn(
+      '[WHATSAPP] Chrome/Chromium executable tidak ditemukan. ' +
+      'Set CHROME_EXECUTABLE_PATH atau install Google Chrome/Chromium.'
+    );
+  }
+
   return new Client({
     authStrategy: new LocalAuth({
       clientId,
       dataPath: path.join(projectRoot, authDir),
     }),
     puppeteer: {
+      ...(executablePath ? { executablePath } : {}),
       headless: true,
       args: [
         '--no-sandbox',
@@ -88,4 +146,9 @@ function createWhatsAppLifecycle(clientId, authDir, options = {}) {
   );
 }
 
-module.exports = { createWWebClient, createWhatsAppLifecycle, patchWhatsAppWebMediaBug };
+module.exports = {
+  createWWebClient,
+  createWhatsAppLifecycle,
+  patchWhatsAppWebMediaBug,
+  resolveBrowserExecutable,
+};
