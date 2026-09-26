@@ -238,24 +238,24 @@ async function waitUntilConnected(targetClient = client) {
   throw new Error('Timeout: WhatsApp tidak CONNECTED');
 }
 
-async function initializeClient() {
-  if (initializing) return;
+function initializeClient() {
+  if (initializing) return initializing;
 
-  initializing = true;
-
-  try {
-    if (!client) {
-      client = createClient();
+  initializing = (async () => {
+    try {
+      if (!client) client = createClient();
+      await client.initialize();
+      return client;
+    } catch (err) {
+      clientReady = false;
+      console.error('❌ Gagal initialize WhatsApp:', err.message);
+      throw err;
+    } finally {
+      initializing = null;
     }
+  })();
 
-    await client.initialize();
-  } catch (err) {
-    clientReady = false;
-    console.error('❌ Gagal initialize WhatsApp:', err.message);
-    throw err;
-  } finally {
-    initializing = false;
-  }
+  return initializing;
 }
 
 async function resetClient() {
@@ -304,14 +304,17 @@ async function resetClient() {
 async function ensureReady() {
   if (clientReady && client) return;
 
-  if (!client) {
-    client = createClient();
-    await client.initialize();
+  if (isResetting) {
+    throw new Error('WhatsApp sedang melakukan recovery. Silakan coba lagi.');
   }
 
+  if (!client) client = createClient();
+
   try {
+    await initializeClient();
     await waitUntilConnected(client);
   } catch (err) {
+    if (isResetting) throw err;
     console.warn('⚠️ Client belum ready, mencoba reset...', err.message);
     await resetClient();
   }
