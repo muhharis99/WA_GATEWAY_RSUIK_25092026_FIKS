@@ -64,11 +64,23 @@ $(function () {
                 data: function (d) {
                     Object.assign(d, getFilters());
                 },
-                error: function (xhr) {
-                    const message =
-                        xhr.responseJSON && xhr.responseJSON.error
-                            ? xhr.responseJSON.error
-                            : 'Terjadi kesalahan saat mengambil riwayat.';
+                error: function (xhr, status, errorThrown) {
+                    let message = 'Terjadi kesalahan saat mengambil riwayat.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        message = xhr.responseJSON.error;
+                    } else if (status === 'timeout') {
+                        message = 'Request riwayat timeout. Database terlalu lambat atau service belum merespons.';
+                    } else if (xhr.status) {
+                        message = 'HTTP ' + xhr.status + ' - ' + (errorThrown || status || 'Unknown error');
+                    }
+
+                    console.error('IJIN ajax_riwayat error:', {
+                        status: xhr.status,
+                        textStatus: status,
+                        error: errorThrown,
+                        response: xhr.responseText
+                    });
 
                     Swal.fire({
                         icon: 'error',
