@@ -40,11 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     >
 
     <link rel="stylesheet" href="assets/style.css">
+    <link rel="icon" type="image/png" href="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png">
 </head>
 <body class="bg-body-tertiary">
     <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
         <div class="container py-2">
-            <a class="navbar-brand fw-bold text-success d-flex align-items-center gap-2" href="index.php"><img src="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png" alt="RSU Islam Klaten" class="navbar-logo"> <span>Dokter Reminder RSU Islam Klaten</span></a>
+            <a class="navbar-brand fw-bold text-success" href="index.php">Dokter Reminder RSU Islam Klaten</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
