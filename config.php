@@ -83,6 +83,10 @@ $env = static function (string $key, ?string $fallback = null): string {
         return $value;
     }
 
+    if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+        return (string) $_ENV[$key];
+    }
+
     if ($fallback !== null) {
         return $fallback;
     }
@@ -94,8 +98,8 @@ $databases = [
     'local' => [
         'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_LOCAL_PORT', '3306'),
-        'user' => $env('DB_LOCAL_USER'),
-        'pass' => $env('DB_LOCAL_PASS'),
+        'user' => $env('DB_LOCAL_USER', 'admin3dp'),
+        'pass' => $env('DB_LOCAL_PASS', '4dm1n3dp'),
         'name' => $env('DB_LOCAL_NAME', 'dokter_reminder')
     ],
 
@@ -110,8 +114,8 @@ $databases = [
     'rsi_byl' => [
         'host' => $env('DB_RSI_BYL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_RSI_BYL_PORT', '3306'),
-        'user' => $env('DB_RSI_BYL_USER'),
-        'pass' => $env('DB_RSI_BYL_PASS'),
+        'user' => $env('DB_RSI_BYL_USER', 'admin3dp'),
+        'pass' => $env('DB_RSI_BYL_PASS', '4dm1n3dp'),
         'name' => $env('DB_RSI_BYL_NAME', 'rsi_byl')
     ],
 
