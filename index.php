@@ -144,23 +144,29 @@ foreach ($rows as $row) {
     $byDoctor[$doctorId]['schedules'][] = $row;
 }
 
-$reminderStmt = $pdo->prepare("
-    SELECT *
-    FROM reminders
-    WHERE doctor_id = ?
-        AND tanggal = ?
-        AND reminder_type = ?
-    LIMIT 1
-");
+$doctorIds = array_keys($byDoctor);
+$remindersByDoctor = [];
+
+if ($doctorIds) {
+    $placeholders = implode(',', array_fill(0, count($doctorIds), '?'));
+    $reminderParams = [$date, 'HARI_INI', ...$doctorIds];
+
+    $reminderStmt = $pdo->prepare("
+        SELECT *
+        FROM reminders
+        WHERE tanggal = ?
+          AND reminder_type = ?
+          AND doctor_id IN ({$placeholders})
+    ");
+    $reminderStmt->execute($reminderParams);
+
+    foreach ($reminderStmt->fetchAll() as $reminderRow) {
+        $remindersByDoctor[(string) $reminderRow['doctor_id']] = $reminderRow;
+    }
+}
 
 foreach ($byDoctor as $doctorId => &$doctorGroup) {
-    $reminderStmt->execute([
-        $doctorId,
-        $date,
-        'HARI_INI'
-    ]);
-
-    $doctorGroup['reminder'] = $reminderStmt->fetch() ?: null;
+    $doctorGroup['reminder'] = $remindersByDoctor[(string) $doctorId] ?? null;
 }
 
 unset($doctorGroup);
