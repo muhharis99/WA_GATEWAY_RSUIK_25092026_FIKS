@@ -11,6 +11,13 @@ const HOST = process.env.WA_HOST || '0.0.0.0';
 const CHAT_INCOMING_URL = process.env.CHAT_INCOMING_URL ||
     'http://127.0.0.1/dokter-reminder/api/chat/incoming.php';
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
+if (typeof process.loadEnvFile === 'function') {
+    try {
+        process.loadEnvFile(path.join(PROJECT_ROOT, '.env'));
+    } catch (error) {
+        console.warn('⚠️ .env Reminder tidak dapat dimuat:', error.message || error);
+    }
+}
 const CHAT_IDENTITY_FILE = path.join(PROJECT_ROOT, '.chat_identity_map.json');
 
 app.disable('x-powered-by');
