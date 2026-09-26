@@ -425,27 +425,38 @@ $(function () {
     var $startDate = $('#startDate');
     var $endDate = $('#endDate');
 
+    var reportLocale =
+        (flatpickr.l10ns && flatpickr.l10ns.id)
+            ? flatpickr.l10ns.id
+            : {
+                firstDayOfWeek: 1
+            };
+
     var startDatePicker = flatpickr('#startDate', {
         dateFormat: 'd-m-Y',
         defaultDate: $startDate.val(),
         allowInput: true,
-        locale: 'id',
-        disableMobile: true
+        clickOpens: true,
+        locale: reportLocale,
+        disableMobile: true,
+        position: 'auto'
     });
 
     var endDatePicker = flatpickr('#endDate', {
         dateFormat: 'd-m-Y',
         defaultDate: $endDate.val(),
         allowInput: true,
-        locale: 'id',
-        disableMobile: true
+        clickOpens: true,
+        locale: reportLocale,
+        disableMobile: true,
+        position: 'auto'
     });
 
-    $('#startDateButton').on('click', function () {
+    $('#startDate, #startDateButton').off('click.reportDate').on('click.reportDate', function () {
         startDatePicker.open();
     });
 
-    $('#endDateButton').on('click', function () {
+    $('#endDate, #endDateButton').off('click.reportDate').on('click.reportDate', function () {
         endDatePicker.open();
     });
 
