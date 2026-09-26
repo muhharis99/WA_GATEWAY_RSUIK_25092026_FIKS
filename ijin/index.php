@@ -300,6 +300,6 @@ function h2($value): string
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../assets/back-to-top.js"></script>
-<script src="assets/js/master.js"></script>
+<script src="assets/js/master.js?v=20260926-02"></script>
 </body>
 </html>
