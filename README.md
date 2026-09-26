@@ -104,3 +104,8 @@ A disconnect in an individual service is handled inside that service process and
 ## Scope of verification
 
 Repository/static checks can be verified through GitHub Actions. Live WhatsApp QR scanning, browser startup, database connectivity to the hospital network, and real message delivery require the deployment/runtime environment and are not inferred from source inspection alone.
+## Frontend JavaScript standard
+
+Browser-side JavaScript now uses **jQuery 3.7.1** as the standard DOM/event/AJAX layer. Page scripts use `$(function(){ ... })`, jQuery selectors, `.on()`, `.val()`, `.text()`, `.prop()`, `.attr()`, `.html()`, `$.ajax()`, and the jQuery integrations of DataTables/Select2. Native DOM APIs such as `document.getElementById()`, `querySelector()`, `addEventListener()`, `fetch()`, and the DataTables constructor API are not used by the browser-side application code.
+
+The Node.js WhatsApp gateway processes under `services/` and `src/` remain server-side JavaScript and are intentionally not converted to jQuery, because jQuery is a browser-side library and is not an appropriate replacement for Node.js HTTP/WhatsApp runtime code.
