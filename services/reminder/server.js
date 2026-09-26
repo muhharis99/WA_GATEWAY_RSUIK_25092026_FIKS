@@ -44,7 +44,7 @@ const timeFormatter = new Intl.DateTimeFormat('id-ID', {
     hour12: false
 });
 
-const client = new Client({
+let client = new Client({
     authStrategy: new LocalAuth({
         clientId: 'dokter-reminder',
         dataPath: path.join(PROJECT_ROOT, '.wwebjs_auth')
@@ -873,8 +873,75 @@ app.listen(PORT, HOST, () => {
     console.log(`WhatsApp gateway berjalan di http://localhost:${PORT}`);
 });
 
-client.initialize().catch((error) => {
+function isStartupNavigationError(error) {
+    const message = String(error?.message || error || '');
+
+    return (
+        message.includes('Execution context was destroyed') ||
+        message.includes('Navigating frame was detached') ||
+        message.includes('Session closed') ||
+        message.includes('Target closed') ||
+        message.includes('Protocol error')
+    );
+}
+
+async function initializeReminderWithRetry() {
+    const maxAttempts = 4;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        try {
+            waState = 'STARTING';
+            lastError = null;
+
+            console.log(
+                '[REMINDER] Inisialisasi WhatsApp percobaan ' +
+                attempt +
+                '/' +
+                maxAttempts
+            );
+
+            await client.initialize();
+            return true;
+        } catch (error) {
+            lastError = error.message || String(error);
+
+            console.error(
+                '[REMINDER] Gagal initialize percobaan ' +
+                attempt +
+                '/' +
+                maxAttempts +
+                ':',
+                lastError
+            );
+
+            if (!isStartupNavigationError(error) || attempt >= maxAttempts) {
+                waState = 'ERROR';
+                return false;
+            }
+
+            waState = 'STARTING';
+
+            try {
+                await client.destroy();
+            } catch (destroyError) {
+                console.warn(
+                    '[REMINDER] destroy setelah initialize gagal:',
+                    destroyError.message || destroyError
+                );
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+    }
+
     waState = 'ERROR';
-    lastError = error.message;
-    console.error('Gagal menginisialisasi WhatsApp:', error);
+    return false;
+}
+
+initializeReminderWithRetry().then((started) => {
+    if (!started) {
+        console.error(
+            '[REMINDER] WhatsApp gagal diinisialisasi setelah seluruh percobaan.'
+        );
+    }
 });
