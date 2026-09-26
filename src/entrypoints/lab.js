@@ -30,7 +30,6 @@ app.get('/health', (req, res) => {
     state: status.state === 'READY' ? 'READY' : status.state === 'DISCONNECTED' ? 'STARTING' : status.state,
     ready: status.ready,
     qrAvailable: status.qrAvailable,
-    qrDataUrl: status.qrDataUrl,
     error: status.error || null,
   });
 });
