@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/report_functions.php';
+require_once dirname(__DIR__) . '/app/Support/report_functions.php';
 
 [$startDate, $endDate] = reportDateRange();
 $status = trim((string) ($_GET['status'] ?? ''));
