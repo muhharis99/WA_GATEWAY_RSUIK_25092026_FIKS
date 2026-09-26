@@ -64,15 +64,7 @@ function startService(service) {
 function sendStop(child) {
   if (!child || child.killed) return;
 
-  if (process.platform === 'win32') {
-    spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], {
-      stdio: 'ignore',
-      windowsHide: true
-    });
-    return;
-  }
-
-  child.kill('SIGTERM');
+  child.kill();
 }
 
 async function gracefulShutdown(exitCode) {
