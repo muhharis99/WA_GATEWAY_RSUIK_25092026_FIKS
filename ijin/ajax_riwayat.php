@@ -5,6 +5,38 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
+$ajaxCompleted = false;
+
+register_shutdown_function(static function () use (&$ajaxCompleted): void {
+    if ($ajaxCompleted) {
+        return;
+    }
+
+    $error = error_get_last();
+
+    if (!$error) {
+        return;
+    }
+
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+
+    if (!in_array((int) $error['type'], $fatalTypes, true)) {
+        return;
+    }
+
+    http_response_code(500);
+    echo json_encode([
+        'draw' => isset($_POST['draw']) ? (int) $_POST['draw'] : 1,
+        'recordsTotal' => 0,
+        'recordsFiltered' => 0,
+        'data' => [],
+        'error' => 'PHP Fatal Error',
+        'detail' => (string) ($error['message'] ?? 'Unknown fatal error'),
+        'file' => (string) ($error['file'] ?? ''),
+        'line' => (int) ($error['line'] ?? 0)
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+});
+
 require_once dirname(__DIR__) . '/functions.php';
 
 $draw = isset($_POST['draw']) ? (int) $_POST['draw'] : 1;
@@ -134,6 +166,8 @@ try {
         ];
     }
 
+    $ajaxCompleted = true;
+
     echo json_encode([
         'draw' => $draw,
         'recordsTotal' => $recordsTotal,
@@ -145,11 +179,16 @@ try {
 
     http_response_code(500);
 
+    $ajaxCompleted = true;
+
     echo json_encode([
         'draw' => $draw,
         'recordsTotal' => 0,
         'recordsFiltered' => 0,
         'data' => [],
-        'error' => $e->getMessage()
+        'error' => get_class($e),
+        'detail' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
