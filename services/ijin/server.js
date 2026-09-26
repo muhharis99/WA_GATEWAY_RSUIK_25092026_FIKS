@@ -451,6 +451,17 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
+app.get('/health', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    success: true,
+    status: 'online',
+    state: getStatus().state,
+    ready: getStatus().ready,
+    qrAvailable: getStatus().qrAvailable,
+  });
+});
+
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 
 app.use(
