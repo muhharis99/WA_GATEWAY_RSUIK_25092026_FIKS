@@ -351,10 +351,7 @@ app.post('/send', async (req, res) => {
         rememberIdentity(numberId._serialized, phone, doctorId);
         rememberIdentity(numberId.user, phone, doctorId);
 
-        const sentMessage = await client.sendMessage(
-            numberId._serialized,
-            message
-        );
+        const sentMessage = await client.sendMessage(numberId._serialized, message, { sendSeen: false });
 
         const messageId = sentMessage?.id?._serialized || null;
 
