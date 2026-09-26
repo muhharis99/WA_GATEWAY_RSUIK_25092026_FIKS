@@ -84,7 +84,7 @@ function h2($value): string
 
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
         <div class="container py-2">
-            <a class="navbar-brand fw-bold text-success" href="../index.php">Dokter Reminder RSU Islam Klaten</a>
+            <a class="navbar-brand fw-bold text-success" href="../index.php">Ijin WA</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
