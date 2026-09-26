@@ -20,7 +20,6 @@ let waState = 'STARTING';
 let qrDataUrl = null;
 let lastError = null;
 let incomingQueueProcessing = false;
-const incomingQueueTimer = null;
 
 const incomingQueue = new Map();
 const completedIncoming = new Map();
