@@ -57,15 +57,6 @@ const db = mysql.createPool({
   connectionLimit: 10,
 });
 
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    service: 'WhatsApp Gateway',
-    status: 'online',
-    endpoint: 'POST /send',
-  });
-});
-
 app.get('/health', (req, res) => {
   res.json({
     success: true,
