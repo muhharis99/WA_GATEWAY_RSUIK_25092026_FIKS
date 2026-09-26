@@ -289,9 +289,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <?php endforeach; ?>
 </select>
 </div>
-<div class="col-md-2 d-grid">
-<button class="btn btn-success" type="submit">Tampilkan</button>
-</div>
+
 </form>
 </div>
 </div>
@@ -392,6 +390,28 @@ $(function () {
         });
     });
 
+    var filterSubmitting = false;
+
+    $('.select2-filter')
+        .off('change.autoFilter')
+        .on('change.autoFilter', function () {
+            if (filterSubmitting) {
+                return;
+            }
+
+            filterSubmitting = true;
+            $(this).closest('form').trigger('submit');
+        });
+
+    $('#status').on('change.autoFilter', function () {
+        if (filterSubmitting) {
+            return;
+        }
+
+        filterSubmitting = true;
+        $(this).closest('form').trigger('submit');
+    });
+
     var localeId = (flatpickr.l10ns && flatpickr.l10ns.id)
         ? flatpickr.l10ns.id
         : { firstDayOfWeek: 1 };
@@ -420,6 +440,20 @@ $(function () {
 
     $('#endDate, #endDateButton').on('click', function () {
         endPicker.open();
+    });
+
+    $('form[method="get"]').on('submit', function () {
+        var $form = $(this);
+
+        if ($form.data('autoSubmitting')) {
+            return true;
+        }
+
+        $form.data('autoSubmitting', true);
+
+        $form.find('button[type="submit"]').prop('disabled', true);
+
+        return true;
     });
 
     $('#reportTable').DataTable({
