@@ -162,7 +162,7 @@ class WhatsAppLifecycle extends EventEmitter {
           '[WHATSAPP] authenticated watchdog timeout; scheduling browser/session recovery.'
         );
         const error = new Error(
-          'WhatsApp authenticated tetapi tidak mencapai CONNECTED/READY dalam '
+          'WhatsApp authenticated tetapi tidak mencapai CONNECTED/READY dalam ' +
           Math.round(this.authenticatedReadyTimeoutMs / 1000) +
           ' detik.'
         );
