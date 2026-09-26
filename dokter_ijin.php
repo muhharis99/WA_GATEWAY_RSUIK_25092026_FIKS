@@ -241,50 +241,48 @@ try {
     <script src="assets/back-to-top.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const leaveDate = document.getElementById('leaveDate');
-            const leaveDateButton = document.getElementById('leaveDateButton');
-            const leaveFilterForm = document.getElementById('leaveFilterForm');
+$(function () {
+    var $date = $('#leaveDate');
 
-            const leaveDatePicker = flatpickr(leaveDate, {
-                dateFormat: 'd-m-Y',
-                defaultDate: leaveDate.value,
-                allowInput: true,
-                locale: 'id',
-                disableMobile: true,
-                onChange: function () {
-                    leaveFilterForm.submit();
-                }
-            });
+    var picker = flatpickr('#leaveDate', {
+        dateFormat: 'd-m-Y',
+        defaultDate: $date.val(),
+        allowInput: true,
+        locale: 'id',
+        disableMobile: true,
+        onChange: function () {
+            $('#leaveFilterForm').trigger('submit');
+        }
+    });
 
-            leaveDateButton.addEventListener('click', function () {
-                leaveDatePicker.open();
-            });
+    $('#leaveDateButton').on('click', function () {
+        picker.open();
+    });
 
-            leaveDate.addEventListener('change', function () {
-                leaveFilterForm.submit();
-            });
+    $date.on('change', function () {
+        $('#leaveFilterForm').trigger('submit');
+    });
 
-            new DataTable('#leaveTable', {
-                responsive: true,
-                pageLength: 25,
-                order: [[0, 'asc']],
-                language: {
-                    search: 'Cari:',
-                    lengthMenu: 'Tampilkan _MENU_ data',
-                    info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                    infoEmpty: 'Tidak ada data',
-                    zeroRecords: 'Data tidak ditemukan',
-                    emptyTable: 'Tidak ada dokter ijin pada tanggal ini',
-                    paginate: {
-                        first: 'Awal',
-                        last: 'Akhir',
-                        next: 'Berikutnya',
-                        previous: 'Sebelumnya'
-                    }
-                }
-            });
-        });
-    </script>
+    $('#leaveTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[0, 'asc']],
+        language: {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Tidak ada dokter ijin pada tanggal ini',
+            paginate: {
+                first: 'Awal',
+                last: 'Akhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
