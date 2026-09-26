@@ -37,10 +37,47 @@ if (!in_array($status, ['', '1', '2'], true)) {
 }
 
 $rows = [];
+$poliOptions = [];
+$dokterOptions = [];
 $error = '';
 
 try {
     $pdo = get_db('ijin');
+
+    $optionDateConditions = [
+        'b.tgl_kirim_pesan >= ?',
+        'b.tgl_kirim_pesan < DATE_ADD(?, INTERVAL 1 DAY)'
+    ];
+    $optionDateParams = [
+        $startDate . ' 00:00:00',
+        $endDate . ' 00:00:00'
+    ];
+
+    $poliStmt = $pdo->prepare("
+        SELECT DISTINCT TRIM(b.nama_poli) AS nama_poli
+        FROM batal_praktek_detil_wa b
+        WHERE " . implode(' AND ', $optionDateConditions) . "
+          AND TRIM(COALESCE(b.nama_poli, '')) <> ''
+        ORDER BY nama_poli ASC
+    ");
+    $poliStmt->execute($optionDateParams);
+    $poliOptions = array_values(array_filter(array_map(
+        static fn(array $row): string => trim((string) $row['nama_poli']),
+        $poliStmt->fetchAll(PDO::FETCH_ASSOC)
+    )));
+
+    $dokterStmt = $pdo->prepare("
+        SELECT DISTINCT TRIM(b.nama_dokter) AS nama_dokter
+        FROM batal_praktek_detil_wa b
+        WHERE " . implode(' AND ', $optionDateConditions) . "
+          AND TRIM(COALESCE(b.nama_dokter, '')) <> ''
+        ORDER BY nama_dokter ASC
+    ");
+    $dokterStmt->execute($optionDateParams);
+    $dokterOptions = array_values(array_filter(array_map(
+        static fn(array $row): string => trim((string) $row['nama_dokter']),
+        $dokterStmt->fetchAll(PDO::FETCH_ASSOC)
+    )));
 
     $conditions = [
         'b.tgl_kirim_pesan >= ?',
@@ -56,16 +93,24 @@ try {
         $params[] = $status;
     }
 
-    foreach ([
-        ['b.no_reg', $noReg],
-        ['b.no_hp', $noTelp],
-        ['b.nama_poli', $poli],
-        ['b.nama_dokter', $namaDokter]
-    ] as [$column, $value]) {
-        if ($value !== '') {
-            $conditions[] = "{$column} LIKE ?";
-            $params[] = '%' . $value . '%';
-        }
+    if ($noReg !== '') {
+        $conditions[] = 'b.no_reg LIKE ?';
+        $params[] = '%' . $noReg . '%';
+    }
+
+    if ($noTelp !== '') {
+        $conditions[] = 'b.no_hp LIKE ?';
+        $params[] = '%' . $noTelp . '%';
+    }
+
+    if ($poli !== '') {
+        $conditions[] = 'TRIM(b.nama_poli) = ?';
+        $params[] = $poli;
+    }
+
+    if ($namaDokter !== '') {
+        $conditions[] = 'TRIM(b.nama_dokter) = ?';
+        $params[] = $namaDokter;
     }
 
     $where = implode(' AND ', $conditions);
@@ -221,12 +266,26 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <input type="text" name="no_telp" class="form-control" value="<?= e($noTelp) ?>">
 </div>
 <div class="col-md-3">
-<label class="form-label">Poli</label>
-<input type="text" name="poli" class="form-control" value="<?= e($poli) ?>">
+<label class="form-label" for="poli">Poli</label>
+<select name="poli" id="poli" class="form-select">
+<option value="">Semua Poli</option>
+<?php foreach ($poliOptions as $option): ?>
+<option value="<?= e($option) ?>" <?= $poli === $option ? 'selected' : '' ?>>
+<?= e($option) ?>
+</option>
+<?php endforeach; ?>
+</select>
 </div>
 <div class="col-md-3">
-<label class="form-label">Dokter</label>
-<input type="text" name="nama_dokter" class="form-control" value="<?= e($namaDokter) ?>">
+<label class="form-label" for="namaDokter">Dokter</label>
+<select name="nama_dokter" id="namaDokter" class="form-select">
+<option value="">Semua Dokter</option>
+<?php foreach ($dokterOptions as $option): ?>
+<option value="<?= e($option) ?>" <?= $namaDokter === $option ? 'selected' : '' ?>>
+<?= e($option) ?>
+</option>
+<?php endforeach; ?>
+</select>
 </div>
 <div class="col-md-2 d-grid">
 <button class="btn btn-success" type="submit">Tampilkan</button>
