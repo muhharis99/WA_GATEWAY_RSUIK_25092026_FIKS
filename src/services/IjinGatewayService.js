@@ -24,7 +24,7 @@ class IjinGatewayService {
         if (!intl) throw new Error('Nomor WhatsApp kosong atau tidak valid');
         const numberId = await this.lifecycle.client.getNumberId(intl);
         if (!numberId) throw new Error('Nomor ' + number + ' tidak terdaftar di WhatsApp');
-        await this.lifecycle.client.sendMessage(numberId._serialized || (intl + '@c.us'), String(message));
+        await this.lifecycle.client.sendMessage(numberId._serialized || (intl + '@c.us'), String(message), { sendSeen: false });
         results.push({ number: intl, status: 1, message: 'Terkirim' });
       } catch (error) {
         results.push({ number, status: 2, message: error.message || 'Gagal mengirim pesan' });
