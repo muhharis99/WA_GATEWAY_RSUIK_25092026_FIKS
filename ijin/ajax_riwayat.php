@@ -20,7 +20,7 @@ if ($length > 100) {
 }
 
 try {
-    // Sumber IJIN: 192.168.0.33 / rsiklaten / batal_praktek_detil_wa
+    // Sama dengan source IJIN: database rsiklaten dan tabel batal_praktek_detil_wa.
     $pdo = get_db('ijin');
 
     $noReg = trim((string) ($_POST['no_reg'] ?? ''));
@@ -73,29 +73,18 @@ try {
         $params[] = $status;
     }
 
-    $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+    $where = $conditions ? ' WHERE ' . implode(' AND ', $conditions) : '';
 
-    // Hindari COUNT(*) penuh dua kali pada setiap request awal.
-    $totalStmt = $pdo->query("
-        SELECT TABLE_ROWS
-        FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE()
-          AND TABLE_NAME = 'batal_praktek_detil_wa'
-        LIMIT 1
-    ");
-    $recordsTotal = (int) ($totalStmt->fetchColumn() ?: 0);
-
-    if ($recordsTotal === 0) {
-        $recordsTotal = (int) $pdo->query(
-            'SELECT COUNT(*) FROM batal_praktek_detil_wa'
-        )->fetchColumn();
-    }
+    // Pola source IJIN: total + filtered + paginated rows.
+    $recordsTotal = (int) $pdo
+        ->query('SELECT COUNT(*) FROM batal_praktek_detil_wa')
+        ->fetchColumn();
 
     if ($where === '') {
         $recordsFiltered = $recordsTotal;
     } else {
         $filterStmt = $pdo->prepare(
-            "SELECT COUNT(*) FROM batal_praktek_detil_wa b {$where}"
+            "SELECT COUNT(*) FROM batal_praktek_detil_wa b{$where}"
         );
         $filterStmt->execute($params);
         $recordsFiltered = (int) $filterStmt->fetchColumn();
@@ -152,6 +141,8 @@ try {
         'data' => $rows
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
+    error_log('IJIN ajax_riwayat error: ' . $e->getMessage());
+
     http_response_code(500);
 
     echo json_encode([
