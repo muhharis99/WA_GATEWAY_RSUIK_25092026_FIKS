@@ -208,7 +208,7 @@ $(function () {
             });
 
             $.ajax({
-                url: '../services/ijin/api-send.php',
+                url: '../api/ijin-send.php',
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'json',
