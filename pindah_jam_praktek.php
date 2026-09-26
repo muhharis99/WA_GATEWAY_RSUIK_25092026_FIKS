@@ -180,50 +180,48 @@ try {
     <script src="assets/back-to-top.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const movedPracticeDate = document.getElementById('movedPracticeDate');
-            const movedPracticeDateButton = document.getElementById('movedPracticeDateButton');
-            const movedPracticeFilterForm = document.getElementById('movedPracticeFilterForm');
+$(function () {
+    var $date = $('#movedPracticeDate');
 
-            const movedPracticeDatePicker = flatpickr(movedPracticeDate, {
-                dateFormat: 'd-m-Y',
-                defaultDate: movedPracticeDate.value,
-                allowInput: true,
-                locale: 'id',
-                disableMobile: true,
-                onChange: function () {
-                    movedPracticeFilterForm.submit();
-                }
-            });
+    var picker = flatpickr('#movedPracticeDate', {
+        dateFormat: 'd-m-Y',
+        defaultDate: $date.val(),
+        allowInput: true,
+        locale: 'id',
+        disableMobile: true,
+        onChange: function () {
+            $('#movedPracticeFilterForm').trigger('submit');
+        }
+    });
 
-            movedPracticeDateButton.addEventListener('click', function () {
-                movedPracticeDatePicker.open();
-            });
+    $('#movedPracticeDateButton').on('click', function () {
+        picker.open();
+    });
 
-            movedPracticeDate.addEventListener('change', function () {
-                movedPracticeFilterForm.submit();
-            });
+    $date.on('change', function () {
+        $('#movedPracticeFilterForm').trigger('submit');
+    });
 
-            new DataTable('#movedPracticeTable', {
-                responsive: true,
-                pageLength: 25,
-                order: [[2, 'asc']],
-                language: {
-                    search: 'Cari:',
-                    lengthMenu: 'Tampilkan _MENU_ data',
-                    info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                    infoEmpty: 'Tidak ada data',
-                    zeroRecords: 'Data tidak ditemukan',
-                    emptyTable: 'Tidak ada dokter yang pindah jam praktek pada tanggal ini',
-                    paginate: {
-                        first: 'Awal',
-                        last: 'Akhir',
-                        next: 'Berikutnya',
-                        previous: 'Sebelumnya'
-                    }
-                }
-            });
-        });
-    </script>
+    $('#movedPracticeTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[2, 'asc']],
+        language: {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Tidak ada dokter yang pindah jam praktek pada tanggal ini',
+            paginate: {
+                first: 'Awal',
+                last: 'Akhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
