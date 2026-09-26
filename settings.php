@@ -56,8 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a class="nav-link" href="report.php">Report</a>
                     <a class="nav-link" href="dokter_ijin.php">Dokter Ijin</a>
                     <a class="nav-link" href="pindah_jam_praktek.php">Pindah Jam Praktek</a>
-                    <a class="nav-link" href="chat_dokter.php">Chat Dokter</a>
-                    <a class="nav-link" href="lab/index.php">LAB</a>
+<a class="nav-link" href="lab/index.php">LAB</a>
                     <a class="nav-link" href="ijin/index.php">Ijin WA</a>
                 </div>
             </div>
