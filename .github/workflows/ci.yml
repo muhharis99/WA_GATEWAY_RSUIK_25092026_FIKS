@@ -12,10 +12,27 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Syntax check
+      - name: Node syntax check
         run: npm run check
-      - name: Contract test
+      - name: Node contract test
         run: npm run test:contract
+      - name: PHP syntax check
+        shell: bash
+        run: |
+          set -e
+          find . -type f -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+      - name: PHP architecture guard
+        shell: bash
+        run: |
+          set -e
+          test -f app/Config/config.php
+          test -f app/Database/db.php
+          test -f app/Support/functions.php
+          test -f app/Support/report_functions.php
+          test ! -f config.php
+          test ! -f db.php
+          test ! -f functions.php
+          test ! -f report_functions.php
       - name: Secret file guard
         run: |
           test ! -f .env

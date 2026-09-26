@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/app/Support/functions.php';
 
 function parseReportDate(string $value, string $fallback): string
 {

@@ -4,21 +4,39 @@ Unified RSUIK gateway repository containing the existing Reminder Dokter, LAB, a
 
 ## Architecture
 
-The legacy HTTP contracts and existing service directories remain available. New modular Node architecture is introduced under `src/`:
+The repository is organized into an application layer and public/runtime entrypoints. The WhatsApp gateway refactor remains under `src/`, while the PHP dashboard infrastructure is now isolated under `app/`.
 
 ```text
+app/
+├── Config/
+│   └── config.php
+├── Database/
+│   └── db.php
+└── Support/
+    ├── functions.php
+    └── report_functions.php
+
 src/
-├── config/          environment/configuration
-├── controllers/     HTTP/controller adapters
-├── entrypoints/     Reminder, LAB, IJIN and supervisor processes
-├── http/            HTTP helpers, UI and graceful shutdown
-├── repositories/    database access abstraction
-├── services/        gateway/business logic
-├── utils/           shared utilities
-└── whatsapp/        WhatsApp Web lifecycle and client construction
+├── config/
+├── controllers/
+├── entrypoints/
+├── http/
+├── repositories/
+├── services/
+├── utils/
+└── whatsapp/
 ```
 
-The WhatsApp engine remains `whatsapp-web.js`; the refactor separates its lifecycle from HTTP and business logic rather than replacing the underlying engine.
+The legacy PHP page URLs are intentionally retained so the dashboard/API contracts do not change. Those pages now consume configuration, database bootstrap, and helper code from `app/` rather than keeping infrastructure files in the repository root.
+
+### Root files that intentionally stay at root
+
+`.env` / `.env.example` and `composer.json` are intentionally root-level:
+
+- Composer expects `composer.json` at the project root for normal PHP dependency management.
+- Environment files are intentionally loaded from the project root and `.env` remains ignored by Git.
+
+The application code/configuration itself is no longer stored in root-level `config.php`, `db.php`, or `functions.php` files.
 
 ## Preserved runtime contracts
 
@@ -67,7 +85,7 @@ npm run check
 npm run test:contract
 ```
 
-GitHub Actions runs the same source syntax and compatibility checks on pushes and pull requests.
+GitHub Actions validates Node source syntax, PHP syntax, structural guards, compatibility contracts, and secret-file guards.
 
 ## WhatsApp lifecycle
 

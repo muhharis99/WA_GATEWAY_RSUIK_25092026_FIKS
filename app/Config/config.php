@@ -3,20 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Database configuration for the RSUIK gateway.
+ * Application configuration for the PHP compatibility/dashboard layer.
  *
- * Priority:
- * 1. Existing process environment variables
- * 2. Project .env file
- * 3. Safe compatibility defaults for non-secret connection settings
- *
- * Database credentials are intentionally not stored in source code.
- * The original projects use:
- * - local      -> 192.168.0.14 / dokter_reminder
- * - rsi_byl    -> 192.168.0.14 / rsi_byl
- * - rsiklaten  -> 192.168.0.67 / db_67
- * - rme        -> 192.168.0.33 / rme
- * - LAB / IJIN -> 192.168.0.33 / rsiklaten
+ * This file belongs to app/Config so infrastructure configuration is kept
+ * outside public entrypoint files while existing HTTP URLs remain unchanged.
  */
 
 function loadProjectEnv(string $file): void
@@ -74,7 +64,8 @@ function loadProjectEnv(string $file): void
     }
 }
 
-loadProjectEnv(__DIR__ . '/.env');
+$projectRoot = dirname(__DIR__, 2);
+loadProjectEnv($projectRoot . '/.env');
 
 $env = static function (string $key, ?string $fallback = null): string {
     $value = getenv($key);
@@ -143,8 +134,6 @@ $databases = [
         'name' => $env('IJIN_DB_NAME', 'rsiklaten')
     ]
 ];
-
-// Koneksi IJIN/LAB selalu mengarah ke DB sumber: 192.168.0.33 / rsiklaten.
 
 function databaseConfig(string $name): array
 {

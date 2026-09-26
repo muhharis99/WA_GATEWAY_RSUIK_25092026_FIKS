@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/app/Support/functions.php';
 
 $rawDate = trim($_GET['tanggal'] ?? date('d-m-Y'));
 $dateObject = DateTime::createFromFormat('d-m-Y', $rawDate);

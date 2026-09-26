@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__).'/report_functions.php';
+require_once dirname(__DIR__).'/app/Support/report_functions.php';
 
 $p=json_decode((string)file_get_contents('php://input'),true)?:[];
 $numbers=trim((string)($p['numbers']??''));
