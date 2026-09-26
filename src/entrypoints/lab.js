@@ -1,14 +1,13 @@
 'use strict';
 
-const path = require('path');
-const express = require('express');
 const { createWhatsAppLifecycle } = require('../whatsapp/createClient');
 const LabGatewayService = require('../services/LabGatewayService');
 const { renderGatewayPage } = require('../http/gatewayUi');
+const { createApp } = require('../http/createApp');
 const { bindShutdownHandlers, gracefulShutdown } = require('../http/gatewayServer');
 const config = require('../config/env');
 
-const lifecycle = createWhatsAppLifecycle('lab-gateway', '.wwebjs_auth_lab');
+const lifecycle = createWhatsAppLifecycle('lab-gateway', '.wwebjs_auth_lab', { patchMediaBug: true });
 const service = new LabGatewayService(lifecycle, {
   messageDelay: config.lab.messageDelay,
   readyTimeout: config.lab.readyTimeout,
@@ -16,10 +15,7 @@ const service = new LabGatewayService(lifecycle, {
   pdfMaxMb: config.lab.pdfMaxMb,
   pdfUrlBase: config.lab.pdfUrlBase,
 });
-const app = express();
-
-app.disable('x-powered-by');
-app.use(express.json({ limit: config.bodyLimits.lab }));
+const app = createApp({ bodyLimit: config.bodyLimits.lab, corsOrigin: config.corsOrigin });
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
