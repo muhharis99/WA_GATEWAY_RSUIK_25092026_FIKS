@@ -389,23 +389,12 @@ $(function () {
         var doctor = $('#filterDoctor').val() || '';
         var poli = $('#filterPoli').val() || '';
         var date = $.trim($('#filterDate').val() || '');
-        var escape = $.fn.dataTable.util.escapeRegex;
 
-        scheduleTable.column(2).search(doctor ? '^' + escape(doctor) + '
-</body>
-</html>
- : '', true, false);
-        scheduleTable.column(3).search(poli ? '^' + escape(poli) + '
-</body>
-</html>
- : '', true, false);
-        scheduleTable.column(0).search(date ? '^' + escape(date) + '
-</body>
-</html>
- : '', true, false);
+        scheduleTable.column(2).search(doctor, false, false);
+        scheduleTable.column(3).search(poli, false, false);
+        scheduleTable.column(0).search(date, false, false);
         scheduleTable.draw();
     }
-
     var scheduleDatePicker = flatpickr('#filterDate', {
         locale: 'id',
         dateFormat: 'd-m-Y',
@@ -419,8 +408,13 @@ $(function () {
         scheduleDatePicker.open();
     });
 
-    $('#filterDoctor, #filterPoli').on('change', applyScheduleFilters);
-    $('#filterDate').on('input', applyScheduleFilters);
+    $('#filterDoctor, #filterPoli')
+        .off('change.scheduleFilter')
+        .on('change.scheduleFilter', applyScheduleFilters);
+
+    $('#filterDate')
+        .off('input.scheduleFilter change.scheduleFilter')
+        .on('input.scheduleFilter change.scheduleFilter', applyScheduleFilters);
 
     $('#resetScheduleFilter').on('click', function () {
         $('#filterDoctor, #filterPoli').val(null).trigger('change.select2');
