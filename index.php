@@ -431,162 +431,176 @@ $encodedFilterQuery = htmlspecialchars($filterQuery, ENT_QUOTES, 'UTF-8');
     <script src="assets/back-to-top.js"></script>
 
     <script>
-        const gatewayBaseUrl = 'http://' + window.location.hostname + ':3210';
-        const gatewayLink = document.getElementById('gatewayLink');
-        const gatewayStatus = document.getElementById('gatewayStatus');
-        const gatewayDot = document.getElementById('gatewayDot');
-        const scheduleDate = document.getElementById('scheduleDate');
-        const scheduleDateButton = document.getElementById('scheduleDateButton');
+$(function () {
+    var gatewayBaseUrl = 'http://' + location.hostname + ':3210';
+    var $gatewayLink = $('#gatewayLink');
+    var $gatewayStatus = $('#gatewayStatus');
+    var $gatewayDot = $('#gatewayDot');
 
-        gatewayLink.href = gatewayBaseUrl + '/';
+    $gatewayLink.attr('href', gatewayBaseUrl + '/');
 
-        const scheduleDatePicker = flatpickr(scheduleDate, {
-            dateFormat: 'd-m-Y',
-            defaultDate: scheduleDate.value,
-            allowInput: true,
-            locale: 'id',
-            disableMobile: true
-        });
+    var scheduleDatePicker = flatpickr('#scheduleDate', {
+        dateFormat: 'd-m-Y',
+        defaultDate: $('#scheduleDate').val(),
+        allowInput: true,
+        locale: 'id',
+        disableMobile: true
+    });
 
-        scheduleDateButton.addEventListener('click', function () {
-            scheduleDatePicker.open();
-        });
+    $('#scheduleDateButton').on('click', function () {
+        scheduleDatePicker.open();
+    });
 
-        async function refreshGatewayStatus() {
-            try {
-                const response = await fetch(gatewayBaseUrl + '/status', { cache: 'no-store' });
-                const data = await response.json();
-
-                if (data.ready) {
-                    gatewayStatus.textContent = 'WhatsApp Gateway READY';
-                    gatewayDot.className = 'gateway-dot ready';
-                    return;
-                }
-
-                if (data.hasQr) {
-                    gatewayStatus.textContent = 'QR tersedia - scan WhatsApp terlebih dahulu';
-                    gatewayDot.className = 'gateway-dot';
-                    return;
-                }
-
-                gatewayStatus.textContent = 'WhatsApp Gateway: ' + (data.state || 'belum siap');
-                gatewayDot.className = 'gateway-dot';
-            } catch (error) {
-                gatewayStatus.textContent = 'WhatsApp Gateway tidak aktif. Jalankan: npm start';
-                gatewayDot.className = 'gateway-dot error';
+    function refreshGatewayStatus() {
+        $.ajax({
+            url: gatewayBaseUrl + '/status',
+            type: 'GET',
+            dataType: 'json',
+            cache: false
+        }).done(function (data) {
+            if (data.ready) {
+                $gatewayStatus.text('WhatsApp Gateway READY');
+                $gatewayDot.removeClass('error').addClass('ready');
+                return;
             }
+
+            if (data.hasQr) {
+                $gatewayStatus.text('QR tersedia - scan WhatsApp terlebih dahulu');
+                $gatewayDot.removeClass('ready error');
+                return;
+            }
+
+            $gatewayStatus.text('WhatsApp Gateway: ' + (data.state || 'belum siap'));
+            $gatewayDot.removeClass('ready error');
+        }).fail(function () {
+            $gatewayStatus.text('WhatsApp Gateway tidak aktif. Jalankan: npm start');
+            $gatewayDot.removeClass('ready').addClass('error');
+        });
+    }
+
+    $('.select2-filter').each(function () {
+        var $select = $(this);
+
+        $select.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: $select.data('placeholder'),
+            allowClear: true,
+            language: {
+                noResults: function () {
+                    return 'Data tidak ditemukan';
+                }
+            }
+        });
+    });
+
+    refreshGatewayStatus();
+    setInterval(refreshGatewayStatus, 5000);
+
+    $('.js-whatsapp').on('click', function () {
+        var $button = $(this);
+        var phone = $button.data('phone');
+        var message = $button.data('message');
+        var reminderId = $button.data('reminderId');
+        var doctorName = $button.data('doctorName') || 'dokter';
+        var originalText = $button.text();
+
+        if (!phone || !message || !reminderId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data belum lengkap',
+                text: 'Data WhatsApp belum lengkap.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#198754'
+            });
+            return;
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            $('.select2-filter').each(function () {
-                const select = $(this);
+        Swal.fire({
+            icon: 'question',
+            title: 'Kirim WhatsApp?',
+            html: 'Apakah reminder benar akan dikirim ke <strong>' + doctorName + '</strong><br>Nomor: <strong>' + phone + '</strong>?',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim',
+            cancelButtonText: 'Tidak',
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            reverseButtons: true,
+            focusCancel: true
+        }).then(function (confirmation) {
+            if (!confirmation.isConfirmed) {
+                return;
+            }
 
-                select.select2({
-                    theme: 'bootstrap-5',
-                    width: '100%',
-                    placeholder: select.data('placeholder'),
-                    allowClear: true,
-                    language: {
-                        noResults: function () {
-                            return 'Data tidak ditemukan';
-                        }
-                    }
-                });
+            $button.prop('disabled', true).text('Mengirim...');
+
+            Swal.fire({
+                title: 'Mengirim WhatsApp',
+                text: 'Mohon tunggu...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: function () {
+                    Swal.showLoading();
+                }
             });
 
-            refreshGatewayStatus();
-            setInterval(refreshGatewayStatus, 5000);
-
-            document.querySelectorAll('.js-whatsapp').forEach(function (button) {
-                button.addEventListener('click', async function () {
-                    const phone = this.dataset.phone;
-                    const message = this.dataset.message;
-                    const reminderId = this.dataset.reminderId;
-                    const doctorName = this.dataset.doctorName || 'dokter';
-                    const originalText = this.textContent;
-
-                    if (!phone || !message || !reminderId) {
-                        await Swal.fire({
-                            icon: 'warning',
-                            title: 'Data belum lengkap',
-                            text: 'Data WhatsApp belum lengkap.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#198754'
-                        });
-                        return;
-                    }
-
-                    const confirmation = await Swal.fire({
-                        icon: 'question',
-                        title: 'Kirim WhatsApp?',
-                        html: 'Apakah reminder benar akan dikirim ke <strong>' + doctorName + '</strong><br>Nomor: <strong>' + phone + '</strong>?',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Kirim',
-                        cancelButtonText: 'Tidak',
-                        confirmButtonColor: '#198754',
-                        cancelButtonColor: '#6c757d',
-                        reverseButtons: true,
-                        focusCancel: true
-                    });
-
-                    if (!confirmation.isConfirmed) {
-                        return;
-                    }
-
-                    this.disabled = true;
-                    this.textContent = 'Mengirim...';
-
+            $.ajax({
+                url: gatewayBaseUrl + '/send',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({
+                    phone: phone,
+                    message: message
+                })
+            }).done(function (result) {
+                if (!result.success) {
                     Swal.fire({
-                        title: 'Mengirim WhatsApp',
-                        text: 'Mohon tunggu...',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: function () {
-                            Swal.showLoading();
-                        }
+                        icon: 'error',
+                        title: 'Gagal Mengirim',
+                        text: result.message || 'Gagal mengirim WhatsApp.',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc3545'
+                    }).then(function () {
+                        location.href = 'index.php?<?= $encodedFilterQuery ?>&action=failed&id=' + encodeURIComponent(reminderId);
                     });
+                    return;
+                }
 
-                    try {
-                        const response = await fetch(gatewayBaseUrl + '/send', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ phone, message })
-                        });
-
-                        const result = await response.json();
-
-                        if (!response.ok || !result.success) {
-                            throw new Error(result.message || 'Gagal mengirim WhatsApp.');
-                        }
-
-                        await Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: 'WhatsApp berhasil dikirim ke ' + phone + '.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#198754'
-                        });
-
-                        window.location.href = 'index.php?<?= $encodedFilterQuery ?>' + '&action=sent&id=' + encodeURIComponent(reminderId);
-                    } catch (error) {
-                        await Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal Mengirim',
-                            text: error.message || 'Gagal menghubungi WhatsApp Gateway.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#dc3545'
-                        });
-
-                        window.location.href = 'index.php?<?= $encodedFilterQuery ?>' + '&action=failed&id=' + encodeURIComponent(reminderId);
-                    } finally {
-                        this.disabled = false;
-                        this.textContent = originalText;
-                    }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'WhatsApp berhasil dikirim ke ' + phone + '.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#198754'
+                }).then(function () {
+                    location.href = 'index.php?<?= $encodedFilterQuery ?>&action=sent&id=' + encodeURIComponent(reminderId);
                 });
+            }).fail(function (xhr, status) {
+                var messageText = 'Gagal menghubungi WhatsApp Gateway.';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    messageText = xhr.responseJSON.message;
+                } else if (status === 'timeout') {
+                    messageText = 'Request timeout. WhatsApp Gateway terlalu lama merespons.';
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Mengirim',
+                    text: messageText,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                }).then(function () {
+                    location.href = 'index.php?<?= $encodedFilterQuery ?>&action=failed&id=' + encodeURIComponent(reminderId);
+                });
+            }).always(function () {
+                $button.prop('disabled', false).text(originalText);
             });
         });
-    </script>
+    });
+});
+</script>
 </body>
 </html>
