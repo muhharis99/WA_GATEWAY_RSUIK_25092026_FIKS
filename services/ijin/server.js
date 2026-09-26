@@ -317,10 +317,7 @@ async function sendMessage(numbers, message) {
 
           // PENTING:
           // Jangan gunakan { sendSeen: false }
-          await client.sendMessage(
-            chatId,
-            message
-          );
+          await client.sendMessage(chatId, message, { sendSeen: false });
 
           console.log(
             `✅ BERHASIL terkirim ke ${intl}`
