@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 ini_set('memory_limit', '256M');
-require_once dirname(__DIR__) . '/report_functions.php';
+require_once dirname(__DIR__) . '/app/Support/report_functions.php';
 
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
 if (!is_file($autoload)) {
