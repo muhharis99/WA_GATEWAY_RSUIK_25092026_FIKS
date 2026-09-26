@@ -3,16 +3,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const { sendMessage } = require('./sendMessage');
+const { sendMessage, shutdown: shutdownWhatsApp } = require('./sendMessage');
 
 const app = express();
+app.disable('x-powered-by');
 const port = 3000;
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 
 app.use(
   bodyParser.json({
-    limit: '5mb'
+    limit: process.env.IJIN_BODY_LIMIT || '256kb'
   })
 );
 
@@ -32,7 +33,7 @@ app.post('/send', async (req, res) => {
   } = req.body;
 
 
-  if (!numbers || !message) {
+  if (typeof numbers !== 'string' || typeof message !== 'string' || numbers.trim() === '' || message.trim() === '') {
 
     return res.status(400).json({
       success: false,
@@ -129,3 +130,47 @@ app.listen(
 
   }
 );
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${port} sedang digunakan proses lain.`);
+  } else {
+    console.error('❌ Server error:', error);
+  }
+});
+
+let shuttingDown = false;
+
+async function gracefulShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`🛑 Menghentikan IJIN gateway (${signal})...`);
+
+  const forceTimer = setTimeout(() => {
+    console.error('❌ Graceful shutdown timeout; proses dihentikan.');
+    process.exit(1);
+  }, 15000);
+  forceTimer.unref();
+
+  try {
+    await shutdownWhatsApp();
+  } finally {
+    await new Promise((resolve) => {
+      db.end(() => {
+        server.close(() => resolve());
+      });
+    });
+
+    clearTimeout(forceTimer);
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', () => { void gracefulShutdown('SIGINT'); });
+process.on('SIGTERM', () => { void gracefulShutdown('SIGTERM'); });
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught exception:', error.stack || error.message || error);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled rejection:', reason);
+});
