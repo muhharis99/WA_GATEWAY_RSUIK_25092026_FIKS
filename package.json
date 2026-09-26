@@ -3,11 +3,11 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "start": "node src/entrypoints/reminder.js",
-    "start:reminder": "node src/entrypoints/reminder.js",
-    "start:lab": "node src/entrypoints/lab.js",
-    "start:ijin": "node src/entrypoints/ijin.js",
-    "start:alternatif": "node src/entrypoints/alternatif.js",
+    "start": "node services/reminder/server.js",
+    "start:reminder": "node services/reminder/server.js",
+    "start:lab": "node services/lab/server.js",
+    "start:ijin": "node services/ijin/server.js",
+    "start:alternatif": "node services/alternatif/server.js",
     "check": "npm run check:source",
     "check:source": "node --check src/config/env.js && node --check src/utils/normalizeNumber.js && node --check src/whatsapp/errors.js && node --check src/whatsapp/WhatsAppLifecycle.js && node --check src/whatsapp/createClient.js && node --check src/services/ReminderGatewayService.js && node --check src/services/LabGatewayService.js && node --check src/services/IjinGatewayService.js && node --check src/controllers/GatewayController.js && node --check src/entrypoints/reminder.js && node --check src/entrypoints/lab.js && node --check src/entrypoints/ijin.js && node --check src/entrypoints/alternatif.js && node --check services/reminder/server.js && node --check services/lab/server.js && node --check services/ijin/server.js && node --check services/alternatif/server.js",
     "test:contract": "node tests/static-contract.js"
