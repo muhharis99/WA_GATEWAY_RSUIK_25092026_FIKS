@@ -1,11 +1,11 @@
 'use strict';
 
 const mysql = require('mysql');
-const express = require('express');
 const { createWhatsAppLifecycle } = require('../whatsapp/createClient');
 const IjinGatewayService = require('../services/IjinGatewayService');
 const IjinRepository = require('../repositories/IjinRepository');
 const { renderGatewayPage } = require('../http/gatewayUi');
+const { createApp } = require('../http/createApp');
 const { bindShutdownHandlers, gracefulShutdown } = require('../http/gatewayServer');
 const config = require('../config/env');
 
@@ -13,10 +13,7 @@ const lifecycle = createWhatsAppLifecycle('ijin-gateway', '.wwebjs_auth_ijin');
 const db = mysql.createPool(config.databases.ijin);
 const repository = new IjinRepository(db);
 const service = new IjinGatewayService(lifecycle, repository);
-const app = express();
-
-app.disable('x-powered-by');
-app.use(express.json({ limit: config.bodyLimits.ijin }));
+const app = createApp({ bodyLimit: config.bodyLimits.ijin, corsOrigin: config.corsOrigin });
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -31,7 +28,6 @@ app.get('/health', (req, res) => {
     state: status.state,
     ready: status.ready,
     qrAvailable: status.qrAvailable,
-    qrDataUrl: status.qrDataUrl,
     error: status.error || null
   });
 });
