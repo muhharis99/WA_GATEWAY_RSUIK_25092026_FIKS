@@ -204,6 +204,63 @@ function createClient() {
     console.error('❌ Auth failure:', msg);
   });
 
+  function isRecoverableLabBrowserError(error) {
+  const message = String(error?.message || error || '');
+
+  return (
+    message.includes('Execution context was destroyed') ||
+    message.includes('Navigating frame was detached') ||
+    message.includes('Session closed') ||
+    message.includes('Target closed') ||
+    message.includes('Protocol error')
+  );
+}
+
+function scheduleLabRecovery(reason = '') {
+  if (labRecoveryScheduled) {
+    return;
+  }
+
+  labRecoveryScheduled = true;
+
+  console.warn(
+    '⚠️ LAB recovery dijadwalkan:',
+    reason || 'disconnect'
+  );
+
+  setTimeout(async () => {
+    try {
+      clientReady = false;
+      qrDataUrl = null;
+      lastInitError = null;
+
+      try {
+        if (client) {
+          await client.destroy();
+        }
+      } catch (destroyError) {
+        console.warn(
+          '⚠️ LAB destroy saat recovery:',
+          destroyError.message || destroyError
+        );
+      }
+
+      client = null;
+      await delay(2000);
+      await initializeClient();
+    } catch (error) {
+      lastInitError = error.message || String(error);
+
+      console.error(
+        '❌ LAB recovery gagal:',
+        lastInitError
+      );
+    } finally {
+      labRecoveryScheduled = false;
+    }
+  }, 3000).unref();
+}
+
   newClient.on('disconnected', (reason) => {
     clientReady = false;
     qrDataUrl = null;
@@ -213,40 +270,7 @@ function createClient() {
       reason
     );
 
-    if (labRecoveryScheduled) {
-      return;
-    }
-
-    labRecoveryScheduled = true;
-
-    setTimeout(async () => {
-      try {
-        lastInitError = null;
-
-        try {
-          if (client) {
-            await client.destroy();
-          }
-        } catch (destroyError) {
-          console.warn(
-            '⚠️ LAB destroy saat recovery:',
-            destroyError.message || destroyError
-          );
-        }
-
-        client = null;
-        await delay(2000);
-        await initializeClient();
-      } catch (error) {
-        lastInitError = error.message || String(error);
-        console.error(
-          '❌ LAB recovery gagal:',
-          lastInitError
-        );
-      } finally {
-        labRecoveryScheduled = false;
-      }
-    }, 3000).unref();
+    scheduleLabRecovery(String(reason || 'Disconnected'));
   });
 
   newClient.on('change_state', (state) => {
