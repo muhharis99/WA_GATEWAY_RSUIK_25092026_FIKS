@@ -322,39 +322,126 @@ $schedules = $pdo->query("
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script src="assets/back-to-top.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const language = {search: 'Cari:', lengthMenu: 'Tampilkan _MENU_ data', info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data', infoEmpty: 'Tidak ada data', zeroRecords: 'Data tidak ditemukan', emptyTable: 'Belum ada data', paginate: {first: 'Awal', last: 'Akhir', next: 'Berikutnya', previous: 'Sebelumnya'}};
-            const doctorTable = new DataTable('#doctorTable', {responsive: true, pageLength: 10, lengthMenu: [10, 25, 50, 100], order: [[1, 'asc']], language});
-            const scheduleTable = new DataTable('#scheduleTable', {responsive: true, pageLength: 10, lengthMenu: [10, 25, 50, 100], order: [[0, 'asc'], [4, 'asc']], language});
-            const poliTable = new DataTable('#poliTable', {responsive: true, pageLength: 10, lengthMenu: [10, 25, 50, 100], order: [[1, 'asc']], language});
-            $('.select2-schedule-filter').each(function () { const select = $(this); select.select2({theme: 'bootstrap-5', width: '100%', placeholder: select.data('placeholder'), allowClear: true, language: {noResults: function () { return 'Data tidak ditemukan'; }}}); });
-            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabButton) { tabButton.addEventListener('shown.bs.tab', function () { doctorTable.columns.adjust(); scheduleTable.columns.adjust(); poliTable.columns.adjust(); }); });
-            const filterDoctor = document.getElementById('filterDoctor');
-            const filterPoli = document.getElementById('filterPoli');
-            const filterDate = document.getElementById('filterDate');
-            const resetScheduleFilter = document.getElementById('resetScheduleFilter');
-            const openScheduleCalendar = document.getElementById('openScheduleCalendar');
-            function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-            function applyScheduleFilters() {
-                const doctor = filterDoctor.value;
-                const poli = filterPoli.value;
-                const date = filterDate.value.trim();
-                scheduleTable.column(2).search(doctor ? '^' + escapeRegex(doctor) + '$' : '', true, false);
-                scheduleTable.column(3).search(poli ? '^' + escapeRegex(poli) + '$' : '', true, false);
-                scheduleTable.column(0).search(date ? '^' + escapeRegex(date) + '$' : '', true, false);
-                scheduleTable.draw();
+$(function () {
+    var language = {
+        search: 'Cari:',
+        lengthMenu: 'Tampilkan _MENU_ data',
+        info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+        infoEmpty: 'Tidak ada data',
+        zeroRecords: 'Data tidak ditemukan',
+        emptyTable: 'Belum ada data',
+        paginate: {
+            first: 'Awal',
+            last: 'Akhir',
+            next: 'Berikutnya',
+            previous: 'Sebelumnya'
+        }
+    };
+
+    var doctorTable = $('#doctorTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[1, 'asc']],
+        language: language
+    });
+
+    var scheduleTable = $('#scheduleTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[0, 'asc'], [4, 'asc']],
+        language: language
+    });
+
+    var poliTable = $('#poliTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[1, 'asc']],
+        language: language
+    });
+
+    $('.select2-schedule-filter').each(function () {
+        var $select = $(this);
+
+        $select.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: $select.data('placeholder'),
+            allowClear: true,
+            language: {
+                noResults: function () {
+                    return 'Data tidak ditemukan';
+                }
             }
-            const scheduleDatePicker = flatpickr(filterDate, {locale: 'id', dateFormat: 'd-m-Y', allowInput: true, clickOpens: true, onChange: applyScheduleFilters, onClose: applyScheduleFilters});
-            openScheduleCalendar.addEventListener('click', function () { scheduleDatePicker.open(); });
-            filterDoctor.addEventListener('change', applyScheduleFilters);
-            filterPoli.addEventListener('change', applyScheduleFilters);
-            filterDate.addEventListener('input', applyScheduleFilters);
-            resetScheduleFilter.addEventListener('click', function () { $('#filterDoctor').val(null).trigger('change.select2'); $('#filterPoli').val(null).trigger('change.select2'); scheduleDatePicker.clear(); scheduleTable.columns().search(''); scheduleTable.search(''); scheduleTable.draw(); });
-            const doctorSelect = document.getElementById('doctorSelect');
-            const phoneInput = document.getElementById('phoneInput');
-            const contactModal = document.getElementById('contactModal');
-            contactModal.addEventListener('show.bs.modal', function (event) { const button = event.relatedTarget; if (!button || !button.classList.contains('js-edit-contact')) { doctorSelect.value = ''; phoneInput.value = ''; return; } doctorSelect.value = button.dataset.doctorCode || ''; phoneInput.value = button.dataset.phone || ''; });
         });
-    </script>
+    });
+
+    $('[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+        doctorTable.columns.adjust();
+        scheduleTable.columns.adjust();
+        poliTable.columns.adjust();
+    });
+
+    function applyScheduleFilters() {
+        var doctor = $('#filterDoctor').val() || '';
+        var poli = $('#filterPoli').val() || '';
+        var date = $.trim($('#filterDate').val() || '');
+        var escape = $.fn.dataTable.util.escapeRegex;
+
+        scheduleTable.column(2).search(doctor ? '^' + escape(doctor) + '
+</body>
+</html>
+ : '', true, false);
+        scheduleTable.column(3).search(poli ? '^' + escape(poli) + '
+</body>
+</html>
+ : '', true, false);
+        scheduleTable.column(0).search(date ? '^' + escape(date) + '
+</body>
+</html>
+ : '', true, false);
+        scheduleTable.draw();
+    }
+
+    var scheduleDatePicker = flatpickr('#filterDate', {
+        locale: 'id',
+        dateFormat: 'd-m-Y',
+        allowInput: true,
+        clickOpens: true,
+        onChange: applyScheduleFilters,
+        onClose: applyScheduleFilters
+    });
+
+    $('#openScheduleCalendar').on('click', function () {
+        scheduleDatePicker.open();
+    });
+
+    $('#filterDoctor, #filterPoli').on('change', applyScheduleFilters);
+    $('#filterDate').on('input', applyScheduleFilters);
+
+    $('#resetScheduleFilter').on('click', function () {
+        $('#filterDoctor, #filterPoli').val(null).trigger('change.select2');
+        scheduleDatePicker.clear();
+        scheduleTable.columns().search('');
+        scheduleTable.search('');
+        scheduleTable.draw();
+    });
+
+    $('#contactModal').on('show.bs.modal', function (event) {
+        var $button = $(event.relatedTarget);
+
+        if (!$button.length || !$button.hasClass('js-edit-contact')) {
+            $('#doctorSelect').val('');
+            $('#phoneInput').val('');
+            return;
+        }
+
+        $('#doctorSelect').val($button.data('doctorCode') || '');
+        $('#phoneInput').val($button.data('phone') || '');
+    });
+});
+</script>
 </body>
 </html>
