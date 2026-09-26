@@ -255,7 +255,7 @@ function h2($value): string
                 </div>
                 <div class="col-12 col-md-3 col-xl-2">
                     <label class="form-label" for="statusKirim">Status</label>
-                    <select id="statusKirim" class="form-select">
+                    <select id="statusKirim" class="form-select select2-history-filter" data-placeholder="Semua Status">
                         <option value="">Semua Status</option>
                         <option value="1">Terkirim</option>
                         <option value="2">Gagal Kirim</option>
