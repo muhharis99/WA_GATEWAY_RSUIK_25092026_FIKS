@@ -77,15 +77,15 @@ if ($noTelp !== '') {
 }
 
 if ($poli !== '') {
-    $conditions[] = 'b.nama_poli LIKE ?';
+    $conditions[] = 'TRIM(b.nama_poli) = ?';
     $bindTypes .= 's';
-    $bindValues[] = '%' . $poli . '%';
+    $bindValues[] = $poli;
 }
 
 if ($namaDokter !== '') {
-    $conditions[] = 'b.nama_dokter LIKE ?';
+    $conditions[] = 'TRIM(b.nama_dokter) = ?';
     $bindTypes .= 's';
-    $bindValues[] = '%' . $namaDokter . '%';
+    $bindValues[] = $namaDokter;
 }
 
 if ($tglKirim !== '') {
