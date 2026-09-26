@@ -17,7 +17,8 @@ $ch=curl_init('http://127.0.0.1:3000/send');
 curl_setopt_array($ch,[
     CURLOPT_POST=>true,
     CURLOPT_RETURNTRANSFER=>true,
-    CURLOPT_TIMEOUT=>120,
+    CURLOPT_CONNECTTIMEOUT=>5,
+    CURLOPT_TIMEOUT=>600,
     CURLOPT_HTTPHEADER=>['Content-Type:application/json'],
     CURLOPT_POSTFIELDS=>json_encode(['numbers'=>$numbers,'message'=>$message])
 ]);
