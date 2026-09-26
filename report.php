@@ -324,11 +324,7 @@ $pdfQuery = http_build_query([
                         </select>
                     </div>
 
-                    <div class="col-md-2 d-grid">
-                        <button class="btn btn-success" type="submit" id="showReportButton">
-                            Tampilkan
-                        </button>
-                    </div>
+
                 </form>
             </div>
         </div>
@@ -422,8 +418,17 @@ $pdfQuery = http_build_query([
 
     <script>
 $(function () {
-    var $startDate = $('#startDate');
-    var $endDate = $('#endDate');
+    var $form = $('#reportFilterForm');
+    var filterSubmitting = false;
+
+    function submitFilters() {
+        if (filterSubmitting) {
+            return;
+        }
+
+        filterSubmitting = true;
+        $form.trigger('submit');
+    }
 
     var reportLocale =
         (flatpickr.l10ns && flatpickr.l10ns.id)
@@ -434,37 +439,61 @@ $(function () {
 
     var startDatePicker = flatpickr('#startDate', {
         dateFormat: 'd-m-Y',
-        defaultDate: $startDate.val(),
+        defaultDate: $('#startDate').val(),
         allowInput: true,
         clickOpens: true,
         locale: reportLocale,
         disableMobile: true,
-        position: 'auto'
+        position: 'auto',
+        onChange: function () {
+            submitFilters();
+        }
     });
 
     var endDatePicker = flatpickr('#endDate', {
         dateFormat: 'd-m-Y',
-        defaultDate: $endDate.val(),
+        defaultDate: $('#endDate').val(),
         allowInput: true,
         clickOpens: true,
         locale: reportLocale,
         disableMobile: true,
-        position: 'auto'
+        position: 'auto',
+        onChange: function () {
+            submitFilters();
+        }
     });
 
-    $('#startDate, #startDateButton').off('click.reportDate').on('click.reportDate', function () {
-        startDatePicker.open();
-    });
+    $('#startDate, #startDateButton')
+        .off('.reportDate')
+        .on('click.reportDate', function () {
+            startDatePicker.open();
+        });
 
-    $('#endDate, #endDateButton').off('click.reportDate').on('click.reportDate', function () {
-        endDatePicker.open();
-    });
+    $('#endDate, #endDateButton')
+        .off('.reportDate')
+        .on('click.reportDate', function () {
+            endDatePicker.open();
+        });
 
-    $('.select2-status').select2({
+    $('#status').select2({
         theme: 'bootstrap-5',
         width: '100%',
-        minimumResultsForSearch: Infinity
+        minimumResultsForSearch: Infinity,
+        allowClear: true,
+        placeholder: 'Semua Status'
     });
+
+    $('#status')
+        .off('change.autoFilter')
+        .on('change.autoFilter', function () {
+            submitFilters();
+        });
+
+    $form
+        .off('submit.autoFilter')
+        .on('submit.autoFilter', function () {
+            filterSubmitting = true;
+        });
 
     $('#reportTable').DataTable({
         responsive: true,
@@ -484,23 +513,6 @@ $(function () {
                 previous: 'Sebelumnya'
             }
         }
-    });
-
-    $('#reportFilterForm').on('submit', function () {
-        $('#showReportButton')
-            .prop('disabled', true)
-            .html('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Memuat...');
-
-        Swal.fire({
-            title: 'Memuat Report',
-            text: 'Mohon tunggu...',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: function () {
-                Swal.showLoading();
-            }
-        });
     });
 
     $('#printPdfButton').on('click', function (event) {
