@@ -601,25 +601,34 @@ client.on('auth_failure', (message) => {
     console.error('WhatsApp auth failure:', message);
 });
 
-client.on('disconnected', (reason) => {
-    waState = 'DISCONNECTED';
-    qrDataUrl = null;
-    lastError = String(reason || 'Disconnected');
+function isRecoverableBrowserError(error) {
+    const message = String(error?.message || error || '');
 
-    console.warn(
-        'WhatsApp disconnected. Service tetap berjalan dan recovery akan dicoba:',
-        reason
+    return (
+        message.includes('Execution context was destroyed') ||
+        message.includes('Navigating frame was detached') ||
+        message.includes('Session closed') ||
+        message.includes('Target closed') ||
+        message.includes('Protocol error')
     );
+}
 
+function scheduleReminderRecovery(reason = '') {
     if (reminderRecoveryScheduled) {
         return;
     }
 
     reminderRecoveryScheduled = true;
 
+    console.warn(
+        '[REMINDER] Recovery WhatsApp dijadwalkan:',
+        reason || 'disconnect'
+    );
+
     setTimeout(async () => {
         try {
             waState = 'STARTING';
+            qrDataUrl = null;
             lastError = null;
 
             try {
@@ -645,6 +654,19 @@ client.on('disconnected', (reason) => {
             reminderRecoveryScheduled = false;
         }
     }, 3000).unref();
+}
+
+client.on('disconnected', (reason) => {
+    waState = 'DISCONNECTED';
+    qrDataUrl = null;
+    lastError = String(reason || 'Disconnected');
+
+    console.warn(
+        'WhatsApp disconnected. Service tetap berjalan dan recovery akan dicoba:',
+        reason
+    );
+
+    scheduleReminderRecovery(String(reason || 'Disconnected'));
 });
 
 client.on('message', (message) => {
@@ -984,4 +1006,47 @@ initializeReminderWithRetry().then((started) => {
             '[REMINDER] WhatsApp gagal diinisialisasi setelah seluruh percobaan.'
         );
     }
+});
+
+
+process.on('uncaughtException', (error) => {
+    if (isRecoverableBrowserError(error)) {
+        waState = 'DISCONNECTED';
+        qrDataUrl = null;
+        lastError = error.message || String(error);
+
+        console.warn(
+            '[REMINDER] Error browser WhatsApp dapat dipulihkan:',
+            lastError
+        );
+
+        scheduleReminderRecovery(lastError);
+        return;
+    }
+
+    console.error(
+        '[REMINDER] Uncaught exception:',
+        error.stack || error.message || error
+    );
+});
+
+process.on('unhandledRejection', (reason) => {
+    if (isRecoverableBrowserError(reason)) {
+        waState = 'DISCONNECTED';
+        qrDataUrl = null;
+        lastError = String(reason?.message || reason);
+
+        console.warn(
+            '[REMINDER] Promise WhatsApp gagal tetapi dapat dipulihkan:',
+            lastError
+        );
+
+        scheduleReminderRecovery(lastError);
+        return;
+    }
+
+    console.error(
+        '[REMINDER] Unhandled rejection:',
+        reason
+    );
 });
