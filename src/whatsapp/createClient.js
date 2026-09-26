@@ -134,9 +134,6 @@ function createWWebClient(clientId, authDir, options = {}) {
       dataPath: path.join(projectRoot, authDir),
     }),
     webVersionCache: { type: 'none' },
-    // Let the installed/bundled Chrome provide its real current User-Agent.
-    // whatsapp-web.js 1.34.7 otherwise applies an old default Chrome UA.
-    userAgent: false,
     puppeteer: {
       ...(executablePath ? { executablePath } : {}),
       headless: true,
