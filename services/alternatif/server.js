@@ -119,9 +119,17 @@ console.log('LAB      -> http://localhost:9000');
 console.log('IJIN     -> http://localhost:3000');
 console.log('==================================================\n');
 
-for (const service of SERVICES) {
-  startService(service);
+async function startAllServices() {
+  for (const service of SERVICES) {
+    startService(service);
+
+    // Beri waktu Chromium / WhatsApp Web service sebelumnya
+    // menyelesaikan startup sebelum service berikutnya dimulai.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
 }
+
+void startAllServices();
 
 process.on('SIGINT', () => { void gracefulShutdown(0); });
 process.on('SIGTERM', () => { void gracefulShutdown(0); });
