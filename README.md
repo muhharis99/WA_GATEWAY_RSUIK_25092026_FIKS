@@ -109,3 +109,18 @@ Repository/static checks can be verified through GitHub Actions. Live WhatsApp Q
 Browser-side JavaScript now uses **jQuery 3.7.1** as the standard DOM/event/AJAX layer. Page scripts use `$(function(){ ... })`, jQuery selectors, `.on()`, `.val()`, `.text()`, `.prop()`, `.attr()`, `.html()`, `$.ajax()`, and the jQuery integrations of DataTables/Select2. Native DOM APIs such as `document.getElementById()`, `querySelector()`, `addEventListener()`, `fetch()`, and the DataTables constructor API are not used by the browser-side application code.
 
 The Node.js WhatsApp gateway processes under `services/` and `src/` remain server-side JavaScript and are intentionally not converted to jQuery, because jQuery is a browser-side library and is not an appropriate replacement for Node.js HTTP/WhatsApp runtime code.
+
+## Runtime architecture
+
+Production gateway scripts now use the MVC entrypoints under `src/entrypoints/`:
+
+- Reminder: `src/entrypoints/reminder.js` → 3210
+- LAB: `src/entrypoints/lab.js` → 9000
+- Ijin: `src/entrypoints/ijin.js` → 3000
+- Supervisor: `src/entrypoints/alternatif.js`
+
+The former `services/*/server.js` files are retained as compatibility/reference sources and remain syntax-checked, but they are no longer the canonical runtime started by `npm start`.
+
+### Security/runtime hardening
+
+Database credentials are required from `.env`/process environment rather than hardcoded PHP fallbacks. Gateway CORS is controlled by `CORS_ORIGIN`, with a restricted local-network default. Health endpoints expose readiness/state without returning raw QR payloads. LAB retains the established `whatsapp-web.js` media workaround inside the MVC client factory.
