@@ -360,7 +360,18 @@ async function shutdown() {
 
 
 
+function getStatus() {
+  const qrPath = path.join(__dirname, 'qr_code.png');
+
+  return {
+    ready: clientReady,
+    state: clientReady ? 'READY' : (fs.existsSync(qrPath) ? 'QR_READY' : 'STARTING'),
+    qrAvailable: fs.existsSync(qrPath)
+  };
+}
+
 module.exports = {
   sendMessage,
-  client
+  client,
+  getStatus
 };
