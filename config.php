@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 /**
- * Konfigurasi mengikuti repo sumber:
- * - REMINDER_DOKTER_RSUIK_25092026_FIKS
- *   local     -> 192.168.0.14 / dokter_reminder
- *   rsiklaten -> 192.168.0.67 / db_67
- *   rsi_byl   -> 192.168.0.14 / rsi_byl
- *   rme       -> 192.168.0.33 / rme
+ * Database configuration for the RSUIK gateway.
  *
- * File .env tetap dapat dipakai untuk override di server.
+ * Priority:
+ * 1. Existing process environment variables
+ * 2. Project .env file
+ * 3. Safe compatibility defaults for non-secret connection settings
+ *
+ * Database credentials are intentionally not stored in source code.
  */
 
 function loadProjectEnv(string $file): void
@@ -70,23 +70,41 @@ function loadProjectEnv(string $file): void
 
 loadProjectEnv(__DIR__ . '/.env');
 
-$env = static function (string $key, string $fallback = ''): string {
+$env = static function (string $key, ?string $fallback = null): string {
     $value = getenv($key);
 
-    return ($value === false || $value === '')
-        ? $fallback
-        : $value;
+    if ($value !== false && $value !== '') {
+        return $value;
+    }
+
+    if ($fallback !== null) {
+        return $fallback;
+    }
+
+    return '';
 };
 
-/*
- * Credential wajib disediakan melalui environment/.env. Host/database default dipertahankan untuk compatibility.
- */
+$requiredCredentialKeys = [
+    'DB_LOCAL_USER',
+    'DB_LOCAL_PASS',
+    'DB_RSI_BYL_USER',
+    'DB_RSI_BYL_PASS',
+];
+
+foreach ($requiredCredentialKeys as $key) {
+    if (getenv($key) === false) {
+        // Keep application boot compatible, but fail with a useful configuration
+        // error in get_db() instead of letting PDO try an empty MySQL account.
+        putenv($key . '=');
+    }
+}
+
 $databases = [
     'local' => [
         'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_LOCAL_PORT', '3306'),
-        'user' => $env('DB_LOCAL_USER', ''),
-        'pass' => $env('DB_LOCAL_PASS', ''),
+        'user' => $env('DB_LOCAL_USER'),
+        'pass' => $env('DB_LOCAL_PASS'),
         'name' => $env('DB_LOCAL_NAME', 'dokter_reminder')
     ],
 
@@ -101,8 +119,8 @@ $databases = [
     'rsi_byl' => [
         'host' => $env('DB_RSI_BYL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_RSI_BYL_PORT', '3306'),
-        'user' => $env('DB_RSI_BYL_USER', ''),
-        'pass' => $env('DB_RSI_BYL_PASS', ''),
+        'user' => $env('DB_RSI_BYL_USER'),
+        'pass' => $env('DB_RSI_BYL_PASS'),
         'name' => $env('DB_RSI_BYL_NAME', 'rsi_byl')
     ],
 
@@ -114,7 +132,6 @@ $databases = [
         'name' => $env('DB_RME_NAME', 'rme')
     ],
 
-    // Koneksi khusus LAB sesuai repo LAB asli.
     'lab' => [
         'host' => $env('LAB_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('LAB_DB_PORT', '3306'),
@@ -123,7 +140,6 @@ $databases = [
         'name' => $env('LAB_DB_NAME', 'rsiklaten')
     ],
 
-    // Koneksi khusus IJIN sesuai repo Ijin asli.
     'ijin' => [
         'host' => $env('IJIN_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('IJIN_DB_PORT', '3306'),
