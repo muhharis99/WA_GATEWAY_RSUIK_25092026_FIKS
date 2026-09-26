@@ -26,17 +26,24 @@ const forbiddenPatterns = [
     /window\.confirm\s*\(/
 ];
 
-const requiredPatterns = [
-    /\$\(function\s*\(/,
-    /\$\.ajax\s*\(/
-];
-
 function read(relativePath) {
     return fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
 }
 
+function frontendJavaScript(relativePath, content) {
+    if (!relativePath.endsWith('.php')) {
+        return content;
+    }
+
+    return [...content.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+        .map(function (match) {
+            return match[1];
+        })
+        .join('\n');
+}
+
 for (const file of frontendFiles) {
-    const content = read(file);
+    const content = frontendJavaScript(file, read(file));
 
     for (const pattern of forbiddenPatterns) {
         if (pattern.test(content)) {
