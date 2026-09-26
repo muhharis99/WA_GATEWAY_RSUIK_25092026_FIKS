@@ -432,11 +432,20 @@ const sendMessage = async (numbers, message) => {
 };
 
 // Start WhatsApp once when this module is loaded.
-client = createClient();
-client.initialize().catch((err) => {
-  console.error('❌ Initialisasi WhatsApp gagal:', err.message);
-});
+initializeClient().catch(() => {});
+
+async function shutdown() {
+  clientReady = false;
+  try {
+    if (client) await client.destroy();
+  } catch (err) {
+    console.warn('⚠️ Gagal menutup client LAB:', err.message);
+  } finally {
+    client = null;
+  }
+}
 
 module.exports = {
   sendMessage,
+  shutdown,
 };
