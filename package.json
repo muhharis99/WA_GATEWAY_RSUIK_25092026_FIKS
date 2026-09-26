@@ -7,7 +7,8 @@
     "start:reminder": "node services/reminder/server.js",
     "start:lab": "node services/lab/server.js",
     "start:ijin": "node services/ijin/server.js",
-    "check": "node --check services/reminder/server.js && node --check services/lab/server.js && node --check services/ijin/server.js"
+    "check": "node --check services/reminder/server.js && node --check services/lab/server.js && node --check services/ijin/server.js",
+    "start:alternatif": "node services/alternatif/server.js"
   },
   "engines": {
     "node": ">=18"
