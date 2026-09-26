@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
@@ -40,18 +39,12 @@ const client = new Client({
 });
 
 client.on('qr', async (qr) => {
-  console.log('\n========================================');
-  console.log('📸 SCAN QR WHATSAPP');
-  console.log('========================================\n');
-
-  qrcode.generate(qr, { small: true });
-
   try {
     qrDataUrl = await QRCode.toDataURL(qr, {
       width: 240,
       margin: 1
     });
-    console.log('🖼️ QR WhatsApp IJIN siap ditampilkan di browser.');
+    console.log('QR WhatsApp siap. Buka browser ke http://localhost:3000');
   } catch (err) {
     console.error('❌ Gagal membuat QR browser:', err.message);
   }
