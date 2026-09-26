@@ -19,6 +19,7 @@ const required = [
   ['.env.example', /IJIN_GATEWAY_PORT=3000/],
   ['.env.example', /REMINDER_GATEWAY_PORT=3210/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('disconnected'/],
+  ['src/whatsapp/createClient.js', /resolveBrowserExecutable/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('auth_failure'/],
   ['src/whatsapp/WhatsAppLifecycle.js', /client\.on\('error'/]
 ];
