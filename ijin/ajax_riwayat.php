@@ -5,7 +5,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-require_once dirname(__DIR__) . '/config.php';
+require_once dirname(__DIR__) . '/app/Config/config.php';
 
 $draw = isset($_POST['draw']) ? (int) $_POST['draw'] : 1;
 $start = max(0, isset($_POST['start']) ? (int) $_POST['start'] : 0);
