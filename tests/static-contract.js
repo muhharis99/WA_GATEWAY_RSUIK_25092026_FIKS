@@ -28,4 +28,4 @@ for (const [file, pattern] of required) {
   if (!pattern.test(content)) throw new Error('Contract missing: ' + file);
 }
 
-console.log('Static compatibility contract: PASS');
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));\nif (pkg.scripts.start !== 'node services/reminder/server.js') throw new Error('Canonical runtime changed');\nif (pkg.scripts['start:lab'] !== 'node services/lab/server.js') throw new Error('LAB runtime changed');\nif (pkg.scripts['start:ijin'] !== 'node services/ijin/server.js') throw new Error('IJIN runtime changed');\nconsole.log('Static compatibility contract: PASS');
