@@ -4,13 +4,15 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+
 const required = [
-  ['services/reminder/server.js', /app\.post\('\/send'/],
-  ['services/reminder/server.js', /app\.get\('\/status'/],
-  ['services/lab/server.js', /app\.post\('\/send'/],
-  ['services/lab/server.js', /app\.get\('\/health'/],
-  ['services/ijin/server.js', /app\.post\('\/send'/],
-  ['services/ijin/server.js', /app\.get\('\/health'/],
+  ['src/entrypoints/reminder.js', /app\.post\('\/send'/],
+  ['src/entrypoints/reminder.js', /app\.get\('\/status'/],
+  ['src/entrypoints/lab.js', /app\.post\('\/send'/],
+  ['src/entrypoints/lab.js', /app\.get\('\/health'/],
+  ['src/entrypoints/ijin.js', /app\.post\('\/send'/],
+  ['src/entrypoints/ijin.js', /app\.get\('\/health'/],
+  ['src/whatsapp/createClient.js', /patchWhatsAppWebMediaBug/],
   ['api/lab-send.php', /127\.0\.0\.1:9000\/send/],
   ['api/ijin-send.php', /127\.0\.0\.1:3000\/send/],
   ['.env.example', /LAB_GATEWAY_PORT=9000/],
@@ -29,7 +31,36 @@ for (const [file, pattern] of required) {
 }
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-if (pkg.scripts.start !== 'node services/reminder/server.js') throw new Error('Canonical runtime changed');
-if (pkg.scripts['start:lab'] !== 'node services/lab/server.js') throw new Error('LAB runtime changed');
-if (pkg.scripts['start:ijin'] !== 'node services/ijin/server.js') throw new Error('IJIN runtime changed');
-console.log('Static compatibility contract: PASS');
+
+if (pkg.scripts.start !== 'node src/entrypoints/reminder.js') {
+  throw new Error('Reminder MVC runtime is not canonical');
+}
+if (pkg.scripts['start:lab'] !== 'node src/entrypoints/lab.js') {
+  throw new Error('LAB MVC runtime is not canonical');
+}
+if (pkg.scripts['start:ijin'] !== 'node src/entrypoints/ijin.js') {
+  throw new Error('IJIN MVC runtime is not canonical');
+}
+if (pkg.scripts['start:alternatif'] !== 'node src/entrypoints/alternatif.js') {
+  throw new Error('Supervisor MVC runtime is not canonical');
+}
+
+for (const file of ['app/Config/config.php']) {
+  const content = fs.readFileSync(path.join(root, file), 'utf8');
+  if (content.includes('4dm1n3dp') || content.includes('admin3dp')) {
+    throw new Error('Hardcoded database credential detected in ' + file);
+  }
+}
+
+for (const file of ['src/entrypoints/lab.js', 'src/entrypoints/ijin.js']) {
+  const content = fs.readFileSync(path.join(root, file), 'utf8');
+  if (content.includes('qrDataUrl:')) {
+    throw new Error('QR payload must not be exposed through health endpoint: ' + file);
+  }
+}
+
+if (fs.existsSync(path.join(root, 'test.txt'))) {
+  throw new Error('Obsolete test.txt must be removed');
+}
+
+console.log('Static compatibility and architecture contract: PASS');
