@@ -25,6 +25,8 @@ const SERVICES = [
 ];
 
 const children = new Map();
+const restartTimers = new Map();
+const restartAttempts = new Map();
 let shuttingDown = false;
 
 function log(name, message) {
@@ -57,8 +59,18 @@ function startService(service) {
       return;
     }
 
-    log(service.name, 'BERHENTI TIDAK TERDUGA (code=' + (code === null ? 'null' : code) + ', signal=' + (signal || 'null') + ')');
-    void gracefulShutdown(code && code !== 0 ? code : 1);
+    log(
+      service.name,
+      'BERHENTI TIDAK TERDUGA (code=' +
+        (code === null ? 'null' : code) +
+        ', signal=' +
+        (signal || 'null') +
+        '). Service lain TETAP berjalan.'
+    );
+
+    if (!shuttingDown) {
+      scheduleServiceRestart(service);
+    }
   });
 
   return child;
@@ -122,6 +134,47 @@ console.log('LAB      -> http://localhost:9000');
 console.log('IJIN     -> http://localhost:3000');
 console.log('==================================================\n');
 
+function scheduleServiceRestart(service) {
+  if (shuttingDown || restartTimers.has(service.name)) {
+    return;
+  }
+
+  const attempt = (restartAttempts.get(service.name) || 0) + 1;
+  restartAttempts.set(service.name, attempt);
+
+  const delayMs = Math.min(
+    5000 * Math.pow(2, Math.max(0, attempt - 1)),
+    60000
+  );
+
+  log(
+    service.name,
+    'Restart otomatis dalam ' +
+      Math.round(delayMs / 1000) +
+      ' detik (attempt ' +
+      attempt +
+      ').'
+  );
+
+  const timer = setTimeout(async () => {
+    restartTimers.delete(service.name);
+
+    if (shuttingDown) {
+      return;
+    }
+
+    startService(service);
+
+    const ready = await waitForGateway(service, 120000);
+
+    if (ready) {
+      restartAttempts.delete(service.name);
+    }
+  }, delayMs);
+
+  restartTimers.set(service.name, timer);
+}
+
 async function waitForGateway(service, timeoutMs = 120000) {
   const startedAt = Date.now();
 
@@ -170,12 +223,14 @@ process.on('SIGINT', () => { void gracefulShutdown(0); });
 process.on('SIGTERM', () => { void gracefulShutdown(0); });
 
 process.on('uncaughtException', (error) => {
-  console.error('ALTERNATIF uncaught exception:', error.stack || error.message || error);
-  void gracefulShutdown(1);
+  console.error(
+    'ALTERNATIF uncaught exception (supervisor tetap berjalan):',
+    error.stack || error.message || error
+  );
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('ALTERNATIF unhandled rejection:', reason);
+  console.error('ALTERNATIF unhandled rejection (supervisor tetap berjalan):', reason);
 });
 
 process.stdin.resume();
