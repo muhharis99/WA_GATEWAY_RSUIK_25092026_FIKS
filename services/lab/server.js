@@ -2,16 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
-const { sendMessage } = require('./sendMessage');
+const { sendMessage, shutdown: shutdownWhatsApp } = require('./sendMessage');
 
 const app = express();
 const port = 9000;
 
 app.disable('x-powered-by');
 
-app.use(cors({ origin: '*' }));
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(bodyParser.json({ limit: process.env.LAB_BODY_LIMIT || '256kb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: process.env.LAB_BODY_LIMIT || '256kb' }));
 
 // Dipertahankan sesuai konfigurasi gateway lama Anda.
 // Saat ini endpoint /send tidak membutuhkan query ke database ini.
@@ -42,7 +42,7 @@ app.get('/health', (req, res) => {
 app.post('/send', async (req, res) => {
   const { numbers, message } = req.body || {};
 
-  if (!numbers || !message) {
+  if (typeof numbers !== 'string' || typeof message !== 'string' || numbers.trim() === '' || message.trim() === '') {
     return res.status(400).json({
       success: false,
       message: 'numbers dan message wajib diisi',
@@ -93,21 +93,39 @@ server.on('error', (error) => {
   }
 });
 
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Menghentikan WhatsApp Gateway...');
+let shuttingDown = false;
 
-  db.end(() => {
-    server.close(() => {
-      console.log('✅ Server berhenti.');
-      process.exit(0);
+async function gracefulShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`\n🛑 Menghentikan WhatsApp Gateway (${signal})...`);
+
+  const forceTimer = setTimeout(() => {
+    console.error('❌ Graceful shutdown timeout; proses dihentikan.');
+    process.exit(1);
+  }, 15000);
+  forceTimer.unref();
+
+  try {
+    await shutdownWhatsApp();
+  } finally {
+    await new Promise((resolve) => {
+      db.end(() => {
+        server.close(() => resolve());
+      });
     });
-  });
+
+    clearTimeout(forceTimer);
+    console.log('✅ Server berhenti.');
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', () => { void gracefulShutdown('SIGINT'); });
+process.on('SIGTERM', () => { void gracefulShutdown('SIGTERM'); });
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught exception:', error.stack || error.message || error);
 });
-
-process.on('SIGTERM', async () => {
-  db.end(() => {
-    server.close(() => {
-      process.exit(0);
-    });
-  });
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled rejection:', reason);
 });
