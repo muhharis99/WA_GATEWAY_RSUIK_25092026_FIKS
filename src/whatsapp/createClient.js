@@ -6,7 +6,7 @@ const QRCode = require('qrcode');
 const WhatsAppLifecycle = require('./WhatsAppLifecycle');
 const { projectRoot } = require('../config/env');
 
-function createWWebClient(clientId, authDir) {
+function createWWebClient(clientId, authDir, options = {}) {
   return new Client({
     authStrategy: new LocalAuth({
       clientId,
@@ -24,24 +24,24 @@ function createWWebClient(clientId, authDir) {
         '--disable-background-networking',
         '--disable-renderer-backgrounding',
       ],
+      ...(options.puppeteer || {}),
     },
     takeoverOnConflict: true,
     takeoverTimeoutMs: 0,
+    ...(options.client || {}),
   });
 }
 
-function createWhatsAppLifecycle(clientId, authDir) {
+function createWhatsAppLifecycle(clientId, authDir, options = {}) {
   return new WhatsAppLifecycle(
-    () => createWWebClient(clientId, authDir),
+    () => createWWebClient(clientId, authDir, options),
     {
-      onQr: async (qr) => {
-        const dataUrl = await QRCode.toDataURL(qr, { width: 240, margin: 1 });
-        lifecycleRef.qrDataUrl = dataUrl;
-      }
+      maxAttempts: options.maxAttempts || 4,
+      retryDelayMs: options.retryDelayMs || 5000,
+      recoveryDelayMs: options.recoveryDelayMs || 3000,
+      onQr: async (qr) => QRCode.toDataURL(qr, { width: 240, margin: 1 }),
     }
   );
 }
 
-let lifecycleRef = null;
-
-module.exports = { createWWebClient };
+module.exports = { createWWebClient, createWhatsAppLifecycle };
