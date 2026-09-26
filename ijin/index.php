@@ -122,7 +122,10 @@ function h2($value): string
                         <div class="fw-semibold">Gateway Ijin Dokter</div>
                         <div class="text-secondary small">Service WhatsApp berjalan pada port 3000.</div>
                     </div>
-                    <a class="btn btn-outline-success btn-sm" href="report.php">Laporan</a>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-success btn-sm" href="http://<?= h2($_SERVER['HTTP_HOST'] ?? 'localhost') ?>:3000/" target="_blank" rel="noopener">Buka QR Gateway</a>
+                        <a class="btn btn-outline-success btn-sm" href="report.php">Laporan</a>
+                    </div>
                 </div>
             </div>
         </div>
