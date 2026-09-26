@@ -16,6 +16,8 @@ jobs:
         run: npm run check
       - name: Node contract test
         run: npm run test:contract
+      - name: jQuery frontend contract
+        run: npm run test:jquery
       - name: PHP syntax check
         shell: bash
         run: |
