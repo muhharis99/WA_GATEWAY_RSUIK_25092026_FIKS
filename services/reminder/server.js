@@ -10,7 +10,8 @@ const PORT = Number(process.env.WA_PORT || 3210);
 const HOST = process.env.WA_HOST || '0.0.0.0';
 const CHAT_INCOMING_URL = process.env.CHAT_INCOMING_URL ||
     'http://127.0.0.1/dokter-reminder/api/chat/incoming.php';
-const CHAT_IDENTITY_FILE = path.join(__dirname, '.chat_identity_map.json');
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+const CHAT_IDENTITY_FILE = path.join(PROJECT_ROOT, '.chat_identity_map.json');
 
 app.disable('x-powered-by');
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
@@ -39,7 +40,7 @@ const timeFormatter = new Intl.DateTimeFormat('id-ID', {
 const client = new Client({
     authStrategy: new LocalAuth({
         clientId: 'dokter-reminder',
-        dataPath: './.wwebjs_auth'
+        dataPath: path.join(PROJECT_ROOT, '.wwebjs_auth')
     }),
     puppeteer: {
         headless: true,
