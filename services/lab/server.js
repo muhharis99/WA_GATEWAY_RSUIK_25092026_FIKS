@@ -73,6 +73,7 @@ let initializing = null;
 let initializingStartedAt = 0;
 let qrDataUrl = null;
 let lastInitError = null;
+let labRecoveryScheduled = false;
 
 const CONFIG = {
   PORT: 9000,
@@ -205,11 +206,47 @@ function createClient() {
 
   newClient.on('disconnected', (reason) => {
     clientReady = false;
-    console.log('⚠️ WhatsApp disconnected:', reason);
+    qrDataUrl = null;
 
-    if (reason !== 'LOGOUT') {
-      console.log('ℹ️ Client disconnected; reconnect akan dicoba saat diperlukan.');
+    console.warn(
+      '⚠️ WhatsApp disconnected. Service LAB tetap berjalan; recovery dijadwalkan:',
+      reason
+    );
+
+    if (labRecoveryScheduled) {
+      return;
     }
+
+    labRecoveryScheduled = true;
+
+    setTimeout(async () => {
+      try {
+        lastInitError = null;
+
+        try {
+          if (client) {
+            await client.destroy();
+          }
+        } catch (destroyError) {
+          console.warn(
+            '⚠️ LAB destroy saat recovery:',
+            destroyError.message || destroyError
+          );
+        }
+
+        client = null;
+        await delay(2000);
+        await initializeClient();
+      } catch (error) {
+        lastInitError = error.message || String(error);
+        console.error(
+          '❌ LAB recovery gagal:',
+          lastInitError
+        );
+      } finally {
+        labRecoveryScheduled = false;
+      }
+    }, 3000).unref();
   });
 
   newClient.on('change_state', (state) => {
