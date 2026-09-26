@@ -19,7 +19,7 @@ class ReminderGatewayService {
     }
     const numberId = await this.lifecycle.client.getNumberId(normalized);
     if (!numberId) { const error = new Error('Nomor tidak terdaftar di WhatsApp.'); error.statusCode = 404; throw error; }
-    const sent = await this.lifecycle.client.sendMessage(numberId._serialized, String(message).trim());
+    const sent = await this.lifecycle.client.sendMessage(numberId._serialized, String(message).trim(), { sendSeen: false });
     return { phone: normalized, doctorId: String(doctorId || '').trim(), messageId: sent?.id?._serialized || null };
   }
 }
