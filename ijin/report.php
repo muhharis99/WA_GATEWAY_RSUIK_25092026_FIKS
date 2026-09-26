@@ -276,22 +276,36 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 <script src="../assets/back-to-top.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    flatpickr('#startDate', {dateFormat:'d-m-Y',locale:'id',disableMobile:true});
-    flatpickr('#endDate', {dateFormat:'d-m-Y',locale:'id',disableMobile:true});
+$(function () {
+    flatpickr('#startDate', {
+        dateFormat: 'd-m-Y',
+        locale: 'id',
+        disableMobile: true
+    });
 
-    new DataTable('#reportTable', {
-        responsive:true,
-        pageLength:25,
-        order:[[6,'desc']],
-        language:{
-            search:'Cari:',
-            lengthMenu:'Tampilkan _MENU_ data',
-            info:'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-            infoEmpty:'Tidak ada data',
-            zeroRecords:'Data tidak ditemukan',
-            emptyTable:'Belum ada data',
-            paginate:{first:'Awal',last:'Akhir',next:'Berikutnya',previous:'Sebelumnya'}
+    flatpickr('#endDate', {
+        dateFormat: 'd-m-Y',
+        locale: 'id',
+        disableMobile: true
+    });
+
+    $('#reportTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        order: [[6, 'desc']],
+        language: {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Belum ada data',
+            paginate: {
+                first: 'Awal',
+                last: 'Akhir',
+                next: 'Berikutnya',
+                previous: 'Sebelumnya'
+            }
         }
     });
 });
