@@ -253,7 +253,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </div>
 <div class="col-md-2">
 <label class="form-label">Status</label>
-<select name="status" class="form-select">
+<select name="status" id="status" class="form-select select2-filter" data-placeholder="Pilih Status">
 <option value="">Semua Status</option>
 <option value="1" <?= $status === '1' ? 'selected' : '' ?>>Terkirim</option>
 <option value="2" <?= $status === '2' ? 'selected' : '' ?>>Gagal Kirim</option>
@@ -261,11 +261,11 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </div>
 <div class="col-md-2">
 <label class="form-label">No. RM</label>
-<input type="text" name="no_reg" class="form-control" value="<?= e($noReg) ?>">
+<input type="text" name="no_reg" id="noReg" class="form-control" value="<?= e($noReg) ?>" autocomplete="off">
 </div>
 <div class="col-md-2">
 <label class="form-label">No. HP</label>
-<input type="text" name="no_telp" class="form-control" value="<?= e($noTelp) ?>">
+<input type="text" name="no_telp" id="noTelp" class="form-control" value="<?= e($noTelp) ?>" autocomplete="off">
 </div>
 <div class="col-md-3">
 <label class="form-label" for="poli">Poli</label>
@@ -390,27 +390,51 @@ $(function () {
         });
     });
 
+    var $filterForm = $('form[method="get"]');
+    var filterTimer = null;
     var filterSubmitting = false;
 
-    $('.select2-filter')
-        .off('change.autoFilter')
-        .on('change.autoFilter', function () {
+    function submitFilters(immediate) {
+        if (filterSubmitting) {
+            return;
+        }
+
+        var submit = function () {
             if (filterSubmitting) {
                 return;
             }
 
             filterSubmitting = true;
-            $(this).closest('form').trigger('submit');
-        });
+            $filterForm.trigger('submit');
+        };
 
-    $('#status').on('change.autoFilter', function () {
-        if (filterSubmitting) {
+        if (immediate) {
+            submit();
             return;
         }
 
-        filterSubmitting = true;
-        $(this).closest('form').trigger('submit');
-    });
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(submit, 500);
+    }
+
+    $('.select2-filter')
+        .off('.autoFilter')
+        .on('change.autoFilter', function () {
+            submitFilters(true);
+        });
+
+    $('#noReg, #noTelp')
+        .off('input.autoFilter')
+        .on('input.autoFilter', function () {
+            submitFilters(false);
+        })
+        .off('keydown.autoFilter')
+        .on('keydown.autoFilter', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitFilters(true);
+            }
+        });
 
     var localeId = (flatpickr.l10ns && flatpickr.l10ns.id)
         ? flatpickr.l10ns.id
@@ -422,7 +446,10 @@ $(function () {
         allowInput: true,
         clickOpens: true,
         disableMobile: true,
-        position: 'auto'
+        position: 'auto',
+        onChange: function () {
+            submitFilters(true);
+        }
     });
 
     var endPicker = flatpickr('#endDate', {
@@ -431,7 +458,10 @@ $(function () {
         allowInput: true,
         clickOpens: true,
         disableMobile: true,
-        position: 'auto'
+        position: 'auto',
+        onChange: function () {
+            submitFilters(true);
+        }
     });
 
     $('#startDate, #startDateButton').on('click', function () {
@@ -442,18 +472,14 @@ $(function () {
         endPicker.open();
     });
 
-    $('form[method="get"]').on('submit', function () {
-        var $form = $(this);
+    $('#startDate, #endDate')
+        .off('change.autoFilter')
+        .on('change.autoFilter', function () {
+            submitFilters(true);
+        });
 
-        if ($form.data('autoSubmitting')) {
-            return true;
-        }
-
-        $form.data('autoSubmitting', true);
-
-        $form.find('button[type="submit"]').prop('disabled', true);
-
-        return true;
+    $filterForm.on('submit', function () {
+        filterSubmitting = true;
     });
 
     $('#reportTable').DataTable({
