@@ -37,13 +37,6 @@ app.get('/status', (req, res) => {
   });
 });
 
-const controller = createGatewayController({
-  send: async (numbers, message) => {
-    const phone = numbers;
-    return service.send(phone, '', message);
-  }
-});
-
 app.post('/send', async (req, res) => {
   const phone = String(req.body?.phone || '');
   const doctorId = String(req.body?.doctor_id || '').trim();
