@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  node-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: npm run check
+      - name: Contract test
+        run: npm run test:contract
+      - name: Secret file guard
+        run: |
+          test ! -f .env
+          test ! -d .wwebjs_auth
+          test ! -d .wwebjs_auth_lab
+          test ! -d .wwebjs_auth_ijin

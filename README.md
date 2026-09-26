@@ -1,107 +1,88 @@
 # WA_GATEWAY_RSUIK_25092026_FIKS
 
-Satu repository untuk tiga sistem RSUIK:
-1. Reminder Dokter
-2. Laboratorium
-3. Ijin Dokter
+Unified RSUIK gateway repository containing the existing Reminder Dokter, LAB, and Ijin WA applications plus their PHP reporting/dashboard layer.
 
-Tampilan web mengikuti basis Reminder Dokter.
+## Architecture
 
-## Struktur
-- /index.php — Reminder Dokter
-- /lab/index.php — menu Laboratorium
-- /lab/report.php — laporan LAB + filter tanggal + PDF
-- /ijin/index.php — menu Ijin WA
-- /ijin/report.php — laporan Ijin + filter tanggal + PDF
-- /master.php — Master Data
-- /settings.php — Template
-- /report.php — laporan Reminder + filter tanggal + PDF
-- /report_functions.php — helper filter tanggal dan log laporan gateway
+The legacy HTTP contracts and existing service directories remain available. New modular Node architecture is introduced under `src/`:
 
-## Laporan
-Laporan memakai pola yang sama dengan Report Reminder yang sudah ada:
-- filter Tanggal Awal dan Tanggal Akhir
-- filter status
-- tabel DataTables
-- tombol Cetak PDF menggunakan mPDF
-- format PDF A4 Landscape
-- rekap Total / Terkirim / Gagal
+```text
+src/
+├── config/          environment/configuration
+├── controllers/     HTTP/controller adapters
+├── entrypoints/     Reminder, LAB, IJIN and supervisor processes
+├── http/            HTTP helpers, UI and graceful shutdown
+├── repositories/    database access abstraction
+├── services/        gateway/business logic
+├── utils/           shared utilities
+└── whatsapp/        WhatsApp Web lifecycle and client construction
+```
 
-Untuk LAB tersedia filter No. Registrasi. Riwayat pengiriman LAB dan Ijin dicatat di database RSUI Klaten melalui tabel:
-- wa_gateway_lab_logs
-- wa_gateway_ijin_logs
+The WhatsApp engine remains `whatsapp-web.js`; the refactor separates its lifecycle from HTTP and business logic rather than replacing the underlying engine.
 
-Tabel laporan dibuat otomatis dengan CREATE TABLE IF NOT EXISTS saat modul laporan/pengiriman dipakai. Jika akun database tidak memiliki hak CREATE TABLE, buat tabel tersebut secara manual dari skema pada `report_functions.php`.
+## Preserved runtime contracts
 
-## Database
+The existing gateway ports are preserved:
 
-Koneksi database dipisahkan sesuai tiga project sumber:
-- Reminder `local`: konfigurasi `dokter_reminder`
-- Reminder `rsiklaten`: konfigurasi `db_67`
-- Reminder `rsi_byl`: konfigurasi `rsi_byl`
-- Reminder `rme`: konfigurasi `rme`
-- DB LAB: `192.168.0.33 / rsiklaten`
-- DB Ijin: `192.168.0.33 / rsiklaten`
+- Reminder: `3210`
+- LAB: `9000`
+- IJIN: `3000`
 
-## Gateway
-Port lama tetap dipertahankan:
-- 3210 Reminder
-- 9000 LAB
-- 3000 IJIN
+Existing PHP API bridge contracts remain:
 
-Ketiganya berada dalam satu repository; masing-masing service memakai source gateway yang sudah terbukti di project asal.
+- `api/lab-send.php` → `http://127.0.0.1:9000/send`
+- `api/ijin-send.php` → `http://127.0.0.1:3000/send`
 
-## Install
+Existing legacy Node entrypoints are retained under `services/*/server.js` for compatibility during migration.
 
-### PHP / Apache / Nginx
-Konfigurasi database sudah disamakan dengan tiga repo sumber. `config.php` memiliki fallback konfigurasi Reminder asli, sedangkan service LAB dan Ijin memiliki fallback konfigurasi masing-masing seperti repo asal. File `.env` tetap tersedia bila Anda ingin override nilai tersebut.
+## Configuration
 
-Bila memakai `.env`, salin contoh:
+Copy:
 
 ```bash
 cp .env.example .env
-nano .env
 ```
 
-PHP membaca `.env` langsung dari folder project sehingga tidak bergantung pada environment shell PHP-FPM/Apache.
+Do not commit `.env` or WhatsApp LocalAuth/session directories.
 
-Pastikan file `.env` tidak dapat diakses publik oleh web server.
+The refactored entrypoints read the existing database and gateway environment variable names. The established ports are not changed.
 
-### Dependency
-composer install
+## Run
+
+```bash
 npm install
 
-Isi environment database dan jalankan service sesuai kebutuhan:
 npm run start:reminder
 npm run start:lab
 npm run start:ijin
 
-Konfigurasi fallback saat ini mengikuti repo sumber yang diminta. Untuk deployment publik, gunakan `.env` dan pertimbangkan memindahkan kredensial dari source code lalu mengganti password database bila repository dapat diakses pihak lain.
-
-
-## Troubleshooting koneksi database
-
-Error seperti:
-
-`SQLSTATE[HY000] [1045] Access denied for user ''@'...` 
-
-berarti kredensial koneksi database `local` belum terbaca. Untuk server ini, isi file `.env` di root project dengan akun database yang memang dipakai oleh server:
-
-```dotenv
-DB_LOCAL_HOST=192.168.0.14
-DB_LOCAL_PORT=3306
-DB_LOCAL_USER=ISI_USERNAME_DATABASE_ANDA
-DB_LOCAL_PASS=ISI_PASSWORD_DATABASE_ANDA
-DB_LOCAL_NAME=dokter_reminder
-
-DB_RSI_BYL_HOST=192.168.0.14
-DB_RSI_BYL_PORT=3306
-DB_RSI_BYL_USER=ISI_USERNAME_DATABASE_ANDA
-DB_RSI_BYL_PASS=ISI_PASSWORD_DATABASE_ANDA
-DB_RSI_BYL_NAME=rsi_byl
+# optional supervisor
+npm run start:alternatif
 ```
 
-Jangan menggunakan string `CHANGE_ME` pada server production. File `.env` tidak disimpan ke Git.
+## Static verification
 
-Setelah mengisi `.env`, pastikan user PHP-FPM/Apache dapat membaca file tersebut. Tidak perlu mengubah port gateway `3210`, `9000`, atau `3000`.
+```bash
+npm run check
+npm run test:contract
+```
 
+GitHub Actions runs the same source syntax and compatibility checks on pushes and pull requests.
+
+## WhatsApp lifecycle
+
+The shared lifecycle abstraction centralizes:
+
+- QR handling
+- authenticated / ready state
+- authentication failure
+- disconnect handling
+- recoverable Puppeteer/browser errors
+- guarded re-initialization
+- graceful shutdown
+
+A disconnect in an individual service is handled inside that service process and does not require changing the other gateway ports or their contracts.
+
+## Scope of verification
+
+Repository/static checks can be verified through GitHub Actions. Live WhatsApp QR scanning, browser startup, database connectivity to the hospital network, and real message delivery require the deployment/runtime environment and are not inferred from source inspection alone.
