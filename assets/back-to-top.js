@@ -96,9 +96,7 @@
                     var copy = getConfirmationCopy($form);
 
                     if (!SwalInstance) {
-                        if (window.confirm(copy.text)) {
-                            submitConfirmed($form);
-                        }
+                        submitConfirmed($form);
                         return;
                     }
 
