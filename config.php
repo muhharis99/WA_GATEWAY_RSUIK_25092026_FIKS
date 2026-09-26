@@ -91,14 +91,6 @@ $requiredCredentialKeys = [
     'DB_RSI_BYL_PASS',
 ];
 
-foreach ($requiredCredentialKeys as $key) {
-    if (getenv($key) === false) {
-        // Keep application boot compatible, but fail with a useful configuration
-        // error in get_db() instead of letting PDO try an empty MySQL account.
-        putenv($key . '=');
-    }
-}
-
 $databases = [
     'local' => [
         'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
