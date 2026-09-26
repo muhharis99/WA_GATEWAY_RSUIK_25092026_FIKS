@@ -14,23 +14,8 @@ function getBrowserCandidates() {
     candidates.push(process.env.CHROME_EXECUTABLE_PATH);
   }
 
-  try {
-    const bundledPuppeteer = require('whatsapp-web.js/node_modules/puppeteer');
-    if (typeof bundledPuppeteer.executablePath === 'function') {
-      candidates.push(bundledPuppeteer.executablePath());
-    }
-  } catch (_) {
-    // Fall back to top-level/system Chrome below.
-  }
-
-  try {
-    const topLevelPuppeteer = require('puppeteer');
-    if (typeof topLevelPuppeteer.executablePath === 'function') {
-      candidates.push(topLevelPuppeteer.executablePath());
-    }
-  } catch (_) {
-    // System browser fallback below.
-  }
+  // Prefer an explicitly configured or installed system Chrome.
+  // The Puppeteer-bundled browser may be missing when install scripts were skipped.
 
   if (process.platform === 'win32') {
     const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
@@ -164,6 +149,8 @@ function createWWebClient(clientId, authDir, options = {}) {
         '--no-default-browser-check',
         '--disable-background-networking',
         '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-blink-features=AutomationControlled'
       ],
       ...(options.puppeteer || {}),
     },
