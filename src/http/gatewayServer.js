@@ -18,10 +18,12 @@ async function gracefulShutdown({ server, lifecycle, closeDatabase }) {
   const timeout = setTimeout(() => { forced = true; process.exit(1); }, 15000);
   timeout.unref?.();
   try {
+    if (server && !forced) {
+      await new Promise((resolve) => server.close(resolve));
+    }
     await lifecycle?.shutdown();
-  } finally {
     if (closeDatabase) await closeDatabase();
-    if (server && !forced) await new Promise((resolve) => server.close(resolve));
+  } finally {
     clearTimeout(timeout);
   }
 }
