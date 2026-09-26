@@ -300,6 +300,35 @@ function h2($value): string
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../assets/back-to-top.js"></script>
+<script>
+/*
+ * IJIN DataTables compatibility:
+ * beberapa instalasi PHP/Laragon dapat mengirim warning sebelum JSON.
+ * Converter ini membersihkan prefix non-JSON tanpa mengubah query backend.
+ */
+(function ($) {
+    if (!$ || !$.ajaxSetup) return;
+
+    $.ajaxSetup({
+        converters: {
+            'text json': function (text) {
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    var first = text.indexOf('{');
+                    var last = text.lastIndexOf('}');
+
+                    if (first >= 0 && last > first) {
+                        return JSON.parse(text.slice(first, last + 1));
+                    }
+
+                    throw error;
+                }
+            }
+        }
+    });
+})(window.jQuery);
+</script>
 <script src="assets/js/master.js?v=20260926-03"></script>
 </body>
 </html>
