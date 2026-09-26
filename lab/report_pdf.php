@@ -8,7 +8,7 @@ require_once dirname(__DIR__) . '/app/Support/report_functions.php';
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
 if (!is_file($autoload)) {
     http_response_code(500);
-    exit('mPDF belum terpasang. Jalankan: composer install');
+    exit('Dependensi PHP belum terpasang. Jalankan `composer install` dari root project terlebih dahulu.');
 }
 require_once $autoload;
 
