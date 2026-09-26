@@ -89,15 +89,15 @@ $databases = [
     'local' => [
         'host' => $env('DB_LOCAL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_LOCAL_PORT', '3306'),
-        'user' => $env('DB_LOCAL_USER', 'admin3dp'),
-        'pass' => $env('DB_LOCAL_PASS', '4dm1n3dp'),
+        'user' => $env('DB_LOCAL_USER'),
+        'pass' => $env('DB_LOCAL_PASS'),
         'name' => $env('DB_LOCAL_NAME', 'dokter_reminder')
     ],
 
     'rsiklaten' => [
         'host' => $env('DB_RSIKLATEN_HOST', '192.168.0.67'),
         'port' => (int) $env('DB_RSIKLATEN_PORT', '3306'),
-        'user' => $env('DB_RSIKLATEN_USER', 'admin'),
+        'user' => $env('DB_RSIKLATEN_USER'),
         'pass' => $env('DB_RSIKLATEN_PASS', ''),
         'name' => $env('DB_RSIKLATEN_NAME', 'db_67')
     ],
@@ -105,15 +105,15 @@ $databases = [
     'rsi_byl' => [
         'host' => $env('DB_RSI_BYL_HOST', '192.168.0.14'),
         'port' => (int) $env('DB_RSI_BYL_PORT', '3306'),
-        'user' => $env('DB_RSI_BYL_USER', 'admin3dp'),
-        'pass' => $env('DB_RSI_BYL_PASS', '4dm1n3dp'),
+        'user' => $env('DB_RSI_BYL_USER'),
+        'pass' => $env('DB_RSI_BYL_PASS'),
         'name' => $env('DB_RSI_BYL_NAME', 'rsi_byl')
     ],
 
     'rme' => [
         'host' => $env('DB_RME_HOST', '192.168.0.33'),
         'port' => (int) $env('DB_RME_PORT', '3306'),
-        'user' => $env('DB_RME_USER', 'admin'),
+        'user' => $env('DB_RME_USER'),
         'pass' => $env('DB_RME_PASS', ''),
         'name' => $env('DB_RME_NAME', 'rme')
     ],
@@ -121,7 +121,7 @@ $databases = [
     'lab' => [
         'host' => $env('LAB_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('LAB_DB_PORT', '3306'),
-        'user' => $env('LAB_DB_USER', 'admin'),
+        'user' => $env('LAB_DB_USER'),
         'pass' => $env('LAB_DB_PASS', ''),
         'name' => $env('LAB_DB_NAME', 'rsiklaten')
     ],
@@ -129,7 +129,7 @@ $databases = [
     'ijin' => [
         'host' => $env('IJIN_DB_HOST', '192.168.0.33'),
         'port' => (int) $env('IJIN_DB_PORT', '3306'),
-        'user' => $env('IJIN_DB_USER', 'admin'),
+        'user' => $env('IJIN_DB_USER'),
         'pass' => $env('IJIN_DB_PASS', ''),
         'name' => $env('IJIN_DB_NAME', 'rsiklaten')
     ]
