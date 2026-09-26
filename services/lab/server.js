@@ -70,7 +70,9 @@ let client = null;
 let clientReady = false;
 let isResetting = false;
 let initializing = null;
+let initializingStartedAt = 0;
 let qrDataUrl = null;
+let lastInitError = null;
 
 const CONFIG = {
   PORT: 9000,
@@ -141,7 +143,8 @@ async function downloadPDF(url, noReg) {
 function createClient() {
   const newClient = new Client({
     authStrategy: new LocalAuth({
-      dataPath: path.join(__dirname, '.wwebjs_auth'),
+      clientId: 'lab-gateway',
+      dataPath: path.join(PROJECT_ROOT, '.wwebjs_auth_lab'),
     }),
     puppeteer: {
       headless: true,
@@ -173,6 +176,7 @@ function createClient() {
         width: 240,
         margin: 1
       });
+      lastInitError = null;
       console.log('QR WhatsApp siap. Buka browser ke http://localhost:9000');
     } catch (err) {
       console.error('❌ Gagal membuat QR browser:', err.message);
@@ -182,11 +186,13 @@ function createClient() {
   newClient.on('authenticated', () => {
     console.log('🔐 WhatsApp authenticated');
     qrDataUrl = null;
+    lastInitError = null;
   });
 
   newClient.on('ready', () => {
     clientReady = true;
     qrDataUrl = null;
+    lastInitError = null;
     console.log('ℹ️ Event ready terpanggil');
     console.log('🟢 WhatsApp CONNECTED & SIAP KIRIM');
   });
@@ -248,14 +254,39 @@ async function waitUntilConnected(targetClient = client) {
 function initializeClient() {
   if (initializing) return initializing;
 
+  initializingStartedAt = Date.now();
+  lastInitError = null;
+
   initializing = (async () => {
     try {
-      if (!client) client = createClient();
-      await client.initialize();
+      if (!client) {
+        client = createClient();
+      }
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Timeout initialize WhatsApp LAB setelah 90 detik.'));
+        }, 90000).unref();
+      });
+
+      await Promise.race([
+        client.initialize(),
+        timeoutPromise
+      ]);
+
       return client;
     } catch (err) {
       clientReady = false;
-      console.error('❌ Gagal initialize WhatsApp:', err.message);
+      lastInitError = err.message || String(err);
+      console.error('❌ Gagal initialize WhatsApp LAB:', lastInitError);
+
+      try {
+        if (client) {
+          await client.destroy();
+        }
+      } catch (_) {}
+
+      client = null;
       throw err;
     } finally {
       initializing = null;
@@ -455,9 +486,13 @@ async function shutdown() {
 function getStatus() {
   return {
     ready: clientReady,
-    state: clientReady ? 'READY' : (qrDataUrl ? 'QR_READY' : 'STARTING'),
+    state: clientReady
+      ? 'READY'
+      : (qrDataUrl ? 'QR_READY' : (lastInitError ? 'ERROR' : 'STARTING')),
     qrAvailable: Boolean(qrDataUrl),
-    qrDataUrl
+    qrDataUrl,
+    error: lastInitError,
+    initializingStartedAt
   };
 }
 
@@ -487,6 +522,10 @@ app.get('/', (req, res) => {
         heading = 'Scan QR WhatsApp';
         description = 'Buka WhatsApp di HP, pilih Perangkat tertaut, lalu scan QR ini.';
         content = '<div class="qr-wrap"><img class="qr" src="' + qrSource + '" alt="QR WhatsApp"></div>';
+    } else if (state === 'ERROR') {
+        heading = 'Gagal Menyiapkan WhatsApp';
+        description = status.error || 'WhatsApp gagal diinisialisasi.';
+        content = '<div class="ready-icon" style="background:#dc3545">×</div>';
     } else {
         content = '<div class="waiting"><div class="spinner"></div></div>';
     }
@@ -534,7 +573,7 @@ app.get('/', (req, res) => {
         '</html>'
     ].join('');
 
-    if (!ready) {
+    if (!ready && state !== 'ERROR') {
         html += '<script>setTimeout(function(){location.reload()},2000)</script>';
     }
 
