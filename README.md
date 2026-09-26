@@ -82,4 +82,27 @@ Konfigurasi fallback saat ini mengikuti repo sumber yang diminta. Untuk deployme
 
 ## Troubleshooting koneksi database
 
-Jika muncul error seperti `Access denied for user ''@'localhost'`, berarti username database belum terbaca. Periksa file `.env`, terutama `DB_USER` dan `DB_PASS`. Jangan mengisi username database dengan string kosong. Jika database memakai akun berbeda, gunakan `DB_RSIKLATEN_USER`, `DB_RSI_BYL_USER`, atau `DB_RME_USER` sesuai koneksi yang diperlukan.
+Error seperti:
+
+`SQLSTATE[HY000] [1045] Access denied for user ''@'...` 
+
+berarti kredensial koneksi database `local` belum terbaca. Untuk server ini, isi file `.env` di root project dengan akun database yang memang dipakai oleh server:
+
+```dotenv
+DB_LOCAL_HOST=192.168.0.14
+DB_LOCAL_PORT=3306
+DB_LOCAL_USER=ISI_USERNAME_DATABASE_ANDA
+DB_LOCAL_PASS=ISI_PASSWORD_DATABASE_ANDA
+DB_LOCAL_NAME=dokter_reminder
+
+DB_RSI_BYL_HOST=192.168.0.14
+DB_RSI_BYL_PORT=3306
+DB_RSI_BYL_USER=ISI_USERNAME_DATABASE_ANDA
+DB_RSI_BYL_PASS=ISI_PASSWORD_DATABASE_ANDA
+DB_RSI_BYL_NAME=rsi_byl
+```
+
+Jangan menggunakan string `CHANGE_ME` pada server production. File `.env` tidak disimpan ke Git.
+
+Setelah mengisi `.env`, pastikan user PHP-FPM/Apache dapat membaca file tersebut. Tidak perlu mengubah port gateway `3210`, `9000`, atau `3000`.
+
