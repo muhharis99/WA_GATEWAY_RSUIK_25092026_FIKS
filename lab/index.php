@@ -2,9 +2,10 @@
 declare(strict_types=1);
 require_once dirname(__DIR__).'/app/Support/functions.php';
 function h($v):string{return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
-?><!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratorium · <?=h(APP_NAME)?></title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="../assets/style.css"></head><body class="bg-body-tertiary"><nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+?><!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratorium · <?=h(APP_NAME)?></title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="../assets/style.css">    <link rel="icon" type="image/png" href="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png">
+</head><body class="bg-body-tertiary"><nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
         <div class="container py-2">
-            <a class="navbar-brand fw-bold text-success d-flex align-items-center gap-2" href="../index.php"><img src="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png" alt="RSU Islam Klaten" class="navbar-logo"> <span>Dokter Reminder RSU Islam Klaten</span></a>
+            <a class="navbar-brand fw-bold text-success" href="../index.php">Dokter Reminder RSU Islam Klaten</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
