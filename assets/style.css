@@ -79,7 +79,9 @@ h3.h5 {
 }
 
 .navbar {
-    position: relative;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1030 !important;
     min-height: 54px;
     padding: 0 !important;
     background: #ffffff !important;
