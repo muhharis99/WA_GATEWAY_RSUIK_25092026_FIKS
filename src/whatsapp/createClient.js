@@ -14,6 +14,24 @@ function getBrowserCandidates() {
     candidates.push(process.env.CHROME_EXECUTABLE_PATH);
   }
 
+  try {
+    const bundledPuppeteer = require('whatsapp-web.js/node_modules/puppeteer');
+    if (typeof bundledPuppeteer.executablePath === 'function') {
+      candidates.push(bundledPuppeteer.executablePath());
+    }
+  } catch (_) {
+    // Fall back to top-level/system Chrome below.
+  }
+
+  try {
+    const topLevelPuppeteer = require('puppeteer');
+    if (typeof topLevelPuppeteer.executablePath === 'function') {
+      candidates.push(topLevelPuppeteer.executablePath());
+    }
+  } catch (_) {
+    // System browser fallback below.
+  }
+
   if (process.platform === 'win32') {
     const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
     const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
@@ -48,9 +66,22 @@ function getBrowserCandidates() {
 
 function resolveBrowserExecutable() {
   const candidates = getBrowserCandidates();
-  const found = candidates.find((candidate) => fs.existsSync(candidate));
+  const found = candidates.find((candidate) => candidate && fs.existsSync(candidate));
 
   return found || null;
+}
+
+function clearWebCache() {
+  const cacheDir = path.join(projectRoot, '.wwebjs_cache');
+
+  try {
+    if (fs.existsSync(cacheDir)) {
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+      console.log('[WHATSAPP] Cleared stale WhatsApp Web cache:', cacheDir);
+    }
+  } catch (error) {
+    console.warn('[WHATSAPP] Could not clear WhatsApp Web cache:', error.message || error);
+  }
 }
 
 function patchWhatsAppWebMediaBug() {
@@ -97,6 +128,10 @@ function createWWebClient(clientId, authDir, options = {}) {
     patchWhatsAppWebMediaBug();
   }
 
+  if (options.clearWebCache !== false) {
+    clearWebCache();
+  }
+
   const executablePath = resolveBrowserExecutable();
 
   if (executablePath) {
@@ -113,6 +148,7 @@ function createWWebClient(clientId, authDir, options = {}) {
       clientId,
       dataPath: path.join(projectRoot, authDir),
     }),
+    webVersionCache: { type: 'none' },
     puppeteer: {
       ...(executablePath ? { executablePath } : {}),
       headless: true,
@@ -141,6 +177,7 @@ function createWhatsAppLifecycle(clientId, authDir, options = {}) {
       maxAttempts: options.maxAttempts || 4,
       retryDelayMs: options.retryDelayMs || 5000,
       recoveryDelayMs: options.recoveryDelayMs || 3000,
+      authenticatedReadyTimeoutMs: options.authenticatedReadyTimeoutMs || 90000,
       onQr: async (qr) => QRCode.toDataURL(qr, { width: 240, margin: 1 }),
     }
   );
@@ -151,4 +188,5 @@ module.exports = {
   createWhatsAppLifecycle,
   patchWhatsAppWebMediaBug,
   resolveBrowserExecutable,
+  clearWebCache,
 };
