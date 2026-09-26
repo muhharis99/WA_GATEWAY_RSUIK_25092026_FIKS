@@ -165,6 +165,8 @@ $pdfQuery = http_build_query([
 <title>Laporan Ijin Dokter · <?= e(APP_NAME) ?></title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/v/bs5/dt-3.0.2/r-4.0.2/datatables.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
     <link rel="icon" type="image/png" href="https://rsuislamklaten.co.id/assets_front/images/logo-rsi-single.png">
@@ -267,7 +269,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </div>
 <div class="col-md-3">
 <label class="form-label" for="poli">Poli</label>
-<select name="poli" id="poli" class="form-select">
+<select name="poli" id="poli" class="form-select select2-filter" data-placeholder="Pilih Poli">
 <option value="">Semua Poli</option>
 <?php foreach ($poliOptions as $option): ?>
 <option value="<?= e($option) ?>" <?= $poli === $option ? 'selected' : '' ?>>
@@ -278,7 +280,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </div>
 <div class="col-md-3">
 <label class="form-label" for="namaDokter">Dokter</label>
-<select name="nama_dokter" id="namaDokter" class="form-select">
+<select name="nama_dokter" id="namaDokter" class="form-select select2-filter" data-placeholder="Pilih Dokter">
 <option value="">Semua Dokter</option>
 <?php foreach ($dokterOptions as $option): ?>
 <option value="<?= e($option) ?>" <?= $namaDokter === $option ? 'selected' : '' ?>>
@@ -366,6 +368,7 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 </main>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/v/bs5/dt-3.0.2/r-4.0.2/datatables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -373,6 +376,22 @@ Mengikuti data riwayat asli <code>batal_praktek_detil_wa</code>.
 <script src="../assets/back-to-top.js"></script>
 <script>
 $(function () {
+    $('.select2-filter').each(function () {
+        var $select = $(this);
+
+        $select.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: $select.data('placeholder'),
+            allowClear: true,
+            language: {
+                noResults: function () {
+                    return 'Data tidak ditemukan';
+                }
+            }
+        });
+    });
+
     var localeId = (flatpickr.l10ns && flatpickr.l10ns.id)
         ? flatpickr.l10ns.id
         : { firstDayOfWeek: 1 };
