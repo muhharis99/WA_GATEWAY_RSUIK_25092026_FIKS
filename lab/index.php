@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once dirname(__DIR__).'/functions.php';
+require_once dirname(__DIR__).'/app/Support/functions.php';
 function h($v):string{return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
 ?><!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratorium · <?=h(APP_NAME)?></title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="../assets/style.css"></head><body class="bg-body-tertiary"><nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
         <div class="container py-2">
