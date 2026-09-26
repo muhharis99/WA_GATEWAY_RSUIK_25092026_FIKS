@@ -333,37 +333,56 @@ function h2($value): string
 </script>
 <script src="assets/js/master.js?v=20260926-03"></script>
 <script>
-(function () {
-    const dot = document.getElementById('gatewayDot');
-    if (!dot) return;
+$.ajaxSetup({
+    converters: {
+        'text json': function (text) {
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                var first = text.indexOf('{');
+                var last = text.lastIndexOf('}');
 
-    const baseUrl = 'http://' + window.location.hostname + ':3000';
+                if (first >= 0 && last > first) {
+                    return JSON.parse(text.slice(first, last + 1));
+                }
 
-    async function refreshIjinGatewayDot() {
-        try {
-            const response = await fetch(baseUrl + '/health', {
-                cache: 'no-store'
-            });
+                throw error;
+            }
+        }
+    }
+});
 
-            const data = await response.json();
-            dot.className = 'gateway-dot';
+$(function () {
+    var $dot = $('#gatewayDot');
+
+    if (!$dot.length) {
+        return;
+    }
+
+    var baseUrl = 'http://' + location.hostname + ':3000';
+
+    function refreshIjinGatewayDot() {
+        $.ajax({
+            url: baseUrl + '/health',
+            type: 'GET',
+            dataType: 'json',
+            cache: false
+        }).done(function (data) {
+            $dot.removeClass('ready error');
 
             if (data.ready || data.state === 'READY') {
-                dot.classList.add('ready');
-            } else if (
-                data.state === 'ERROR' ||
-                data.state === 'AUTH_FAILURE'
-            ) {
-                dot.classList.add('error');
+                $dot.addClass('ready');
+            } else if (data.state === 'ERROR' || data.state === 'AUTH_FAILURE') {
+                $dot.addClass('error');
             }
-        } catch (error) {
-            dot.className = 'gateway-dot error';
-        }
+        }).fail(function () {
+            $dot.removeClass('ready').addClass('error');
+        });
     }
 
     refreshIjinGatewayDot();
     setInterval(refreshIjinGatewayDot, 5000);
-})();
+});
 </script>
 </body>
 </html>
