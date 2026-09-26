@@ -1,10 +1,143 @@
 $(function () {
-    let table = null;
+    var table = null;
+    var filterTimer = null;
+    var filterSubmitting = false;
 
-    flatpickr('#tglKirim', {
+    function normalizeHistoryDate() {
+        var rawDate = $.trim($('#tglKirim').val() || '');
+
+        if (!rawDate) {
+            return '';
+        }
+
+        var parts = rawDate.split('-');
+
+        if (parts.length === 3 && parts[0].length === 2) {
+            return parts[2] + '-' + parts[1] + '-' + parts[0];
+        }
+
+        return rawDate;
+    }
+
+    function getFilters() {
+        return {
+            no_reg: $.trim($('#noReg').val() || ''),
+            no_telp: $.trim($('#noTelp').val() || ''),
+            poli: $.trim($('#poli').val() || ''),
+            nama_dokter: $.trim($('#namaDokter').val() || ''),
+            tgl_kirim: normalizeHistoryDate(),
+            status: $('#statusKirim').val() || ''
+        };
+    }
+
+    function reloadHistory(immediate) {
+        if (!table || filterSubmitting) {
+            return;
+        }
+
+        var reload = function () {
+            table.ajax.reload(null, true);
+        };
+
+        if (immediate) {
+            clearTimeout(filterTimer);
+            reload();
+            return;
+        }
+
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(reload, 500);
+    }
+
+    function initRemoteSelect2(selector, type, placeholder) {
+        $(selector).select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            allowClear: true,
+            placeholder: placeholder,
+            minimumInputLength: 0,
+            ajax: {
+                url: 'filter_options.php',
+                dataType: 'json',
+                delay: 250,
+                cache: true,
+                data: function (params) {
+                    return {
+                        type: type,
+                        q: params.term || ''
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results || []
+                    };
+                }
+            },
+            language: {
+                searching: function () {
+                    return 'Mencari...';
+                },
+                noResults: function () {
+                    return 'Data tidak ditemukan';
+                }
+            }
+        }).on('change.autoFilter', function () {
+            reloadHistory(true);
+        });
+    }
+
+    initRemoteSelect2('#poli', 'poli', 'Semua Poli');
+    initRemoteSelect2('#namaDokter', 'dokter', 'Semua Dokter');
+
+    $('#statusKirim').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        allowClear: true,
+        placeholder: 'Semua Status',
+        minimumResultsForSearch: Infinity
+    }).on('change.autoFilter', function () {
+        reloadHistory(true);
+    });
+
+    var historyPicker = flatpickr('#tglKirim', {
         dateFormat: 'd-m-Y',
         locale: 'id',
-        disableMobile: true
+        allowInput: true,
+        clickOpens: true,
+        disableMobile: true,
+        position: 'auto',
+        onChange: function () {
+            reloadHistory(true);
+        }
+    });
+
+    $('#tglKirim').on('change.autoFilter', function () {
+        reloadHistory(true);
+    });
+
+    $('#noReg, #noTelp')
+        .off('.autoFilter')
+        .on('input.autoFilter', function () {
+            reloadHistory(false);
+        })
+        .on('keydown.autoFilter', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                reloadHistory(true);
+            }
+        });
+
+    $('#btnReset').on('click', function () {
+        clearTimeout(filterTimer);
+
+        $('#noReg, #noTelp, #tglKirim').val('');
+        $('#poli, #namaDokter, #statusKirim').val(null).trigger('change.select2');
+
+        if (historyPicker) {
+            historyPicker.clear();
+        }
+
+        reloadHistory(true);
     });
 
     function statusLabel(value) {
@@ -25,28 +158,6 @@ $(function () {
         return '<span class="badge text-bg-secondary">N/A</span>';
     }
 
-    function getFilters() {
-        const rawDate = $('#tglKirim').val().trim();
-        let dateValue = rawDate;
-
-        if (rawDate) {
-            const parts = rawDate.split('-');
-
-            if (parts.length === 3 && parts[0].length === 2) {
-                dateValue = parts[2] + '-' + parts[1] + '-' + parts[0];
-            }
-        }
-
-        return {
-            no_reg: $('#noReg').val().trim(),
-            no_telp: $('#noTelp').val().trim(),
-            poli: $('#poli').val().trim(),
-            nama_dokter: $('#namaDokter').val().trim(),
-            tgl_kirim: dateValue,
-            status: $('#statusKirim').val()
-        };
-    }
-
     function initTable() {
         if (table) return;
 
@@ -62,10 +173,10 @@ $(function () {
                 url: 'ajax_riwayat.php',
                 type: 'POST',
                 data: function (d) {
-                    Object.assign(d, getFilters());
+                    $.extend(d, getFilters());
                 },
                 error: function (xhr, status, errorThrown) {
-                    let message = 'Terjadi kesalahan saat mengambil riwayat.';
+                    var message = 'Terjadi kesalahan saat mengambil riwayat.';
 
                     if (xhr.responseJSON && xhr.responseJSON.detail) {
                         message =
@@ -118,7 +229,7 @@ $(function () {
                 processing: 'Memuat data...',
                 paginate: {
                     first: 'Awal',
-                    last: 'Akhir',
+                    last: 'Terakhir',
                     next: 'Berikutnya',
                     previous: 'Sebelumnya'
                 }
@@ -127,28 +238,6 @@ $(function () {
     }
 
     initTable();
-
-    $('#btnCari').on('click', function () {
-        table.ajax.reload(null, true);
-    });
-
-    $('#btnReset').on('click', function () {
-        $('#noReg, #noTelp, #poli, #namaDokter, #tglKirim').val('');
-        $('#statusKirim').val('');
-        table.ajax.reload(null, true);
-    });
-
-    $('#historyFilterForm input').on('keydown', function (event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            table.ajax.reload(null, true);
-        }
-    });
-
-    $('#statusKirim').on('change', function () {
-        table.ajax.reload(null, true);
-    });
-
     $('#editMessage').on('click', function () {
         $('#message').prop('readonly', false).trigger('focus');
         $('#editMessage').addClass('d-none');
