@@ -346,7 +346,18 @@ function initializeClient() {
   return initializing;
 }
 
-initializeClient();
+initializeClient().catch(() => {});
+
+async function shutdown() {
+  clientReady = false;
+  try {
+    await client.destroy();
+  } catch (err) {
+    console.warn('⚠️ Gagal menutup client IJIN:', err.message);
+  }
+}
+
+
 
 
 module.exports = {
