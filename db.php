@@ -77,9 +77,25 @@ function get_db(string $name = 'local'): PDO
     $host = $config['host'];
     $port = $config['port'] ?? 3306;
     $dbname = $config['name'];
-    $user = $config['user'];
-    $pass = $config['pass'] ?? '';
+    $user = trim((string) ($config['user'] ?? ''));
+    $pass = (string) ($config['pass'] ?? '');
     $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+
+    if ($user === '') {
+        $envKey = match ($name) {
+            'local' => 'DB_LOCAL_USER',
+            'rsi_byl' => 'DB_RSI_BYL_USER',
+            'rsiklaten' => 'DB_RSIKLATEN_USER',
+            'rme' => 'DB_RME_USER',
+            'lab' => 'LAB_DB_USER',
+            'ijin' => 'IJIN_DB_USER',
+            default => strtoupper('DB_' . $name . '_USER')
+        };
+
+        throw new RuntimeException(
+            "Database '$name' belum dikonfigurasi. Isi $envKey pada file .env atau environment PHP."
+        );
+    }
 
     try {
         $_pdo_connections[$name] = new PDO(
