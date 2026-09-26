@@ -86,23 +86,35 @@ client.on('auth_failure', (msg) => {
   clientReady = false;
 });
 
-client.on('disconnected', async (reason) => {
-  console.warn(
-    '🔴 WhatsApp disconnected. Service IJIN tetap berjalan; recovery dijadwalkan:',
-    reason
+function isRecoverableIjinBrowserError(error) {
+  const message = String(error?.message || error || '');
+
+  return (
+    message.includes('Execution context was destroyed') ||
+    message.includes('Navigating frame was detached') ||
+    message.includes('Session closed') ||
+    message.includes('Target closed') ||
+    message.includes('Protocol error')
   );
+}
 
-  clientReady = false;
-  qrDataUrl = null;
-
+function scheduleIjinRecovery(reason = '') {
   if (ijinRecoveryScheduled) {
     return;
   }
 
   ijinRecoveryScheduled = true;
 
+  console.warn(
+    '🔄 IJIN recovery dijadwalkan:',
+    reason || 'disconnect'
+  );
+
   setTimeout(async () => {
     try {
+      clientReady = false;
+      qrDataUrl = null;
+
       try {
         await client.destroy();
       } catch (destroyError) {
@@ -116,6 +128,7 @@ client.on('disconnected', async (reason) => {
       await initializeClient();
     } catch (error) {
       clientReady = false;
+
       console.error(
         '❌ IJIN recovery gagal:',
         error.message || error
@@ -124,6 +137,18 @@ client.on('disconnected', async (reason) => {
       ijinRecoveryScheduled = false;
     }
   }, 3000).unref();
+}
+
+client.on('disconnected', async (reason) => {
+  console.warn(
+    '🔴 WhatsApp disconnected. Service IJIN tetap berjalan; recovery dijadwalkan:',
+    reason
+  );
+
+  clientReady = false;
+  qrDataUrl = null;
+
+  scheduleIjinRecovery(String(reason || 'Disconnected'));
 });
 
 client.on('change_state', (state) => {
