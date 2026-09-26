@@ -74,6 +74,7 @@ class WhatsAppLifecycle extends EventEmitter {
       this.qrDataUrl = null;
       this.lastError = null;
       this.state = 'AUTHENTICATED';
+      console.log('[WHATSAPP] authenticated event received; probing connection state...');
       this.emit('authenticated');
       this.emit('state', this.state);
       this.watchAuthenticatedReady(client);
@@ -137,6 +138,7 @@ class WhatsAppLifecycle extends EventEmitter {
         const state = await client.getState();
 
         if (state === 'CONNECTED') {
+          console.log('[WHATSAPP] connection state is CONNECTED; promoting client to READY.');
           this.clearAuthenticatedWatch();
           this.qrDataUrl = null;
           this.lastError = null;
@@ -156,8 +158,11 @@ class WhatsAppLifecycle extends EventEmitter {
 
       if (Date.now() - startedAt >= this.authenticatedReadyTimeoutMs) {
         this.clearAuthenticatedWatch();
+        console.warn(
+          '[WHATSAPP] authenticated watchdog timeout; scheduling browser/session recovery.'
+        );
         const error = new Error(
-          'WhatsApp authenticated tetapi tidak mencapai CONNECTED/READY dalam ' +
+          'WhatsApp authenticated tetapi tidak mencapai CONNECTED/READY dalam '
           Math.round(this.authenticatedReadyTimeoutMs / 1000) +
           ' detik.'
         );
