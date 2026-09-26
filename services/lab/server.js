@@ -25,17 +25,16 @@ const qrPath = path.join(__dirname, 'qr_code.png');
 
 app.get('/', (req, res) => {
   const status = getWhatsAppStatus();
-  const qr = status.qrAvailable
-    ? '<img src="/qr.png?t=' + Date.now() + '" alt="QR WhatsApp LAB" style="max-width:360px;width:100%;border:1px solid #ddd;border-radius:16px;padding:10px;background:#fff">'
-    : '';
-
-  const body = status.ready
-    ? '<div style="font-size:72px;color:#198754">✓</div><h2>WhatsApp LAB siap digunakan</h2><p>Gateway port 9000 sudah terhubung.</p>'
-    : status.qrAvailable
-      ? '<h2>Scan QR WhatsApp LAB</h2><p>Buka WhatsApp di HP → Perangkat tertaut → Tautkan perangkat.</p>' + qr
-      : '<h2>Menyiapkan WhatsApp LAB...</h2><p>Status: ' + status.state + '</p>';
-
-  res.send('<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gateway LAB</title><style>body{font-family:Arial,sans-serif;background:#f5f7f9;margin:0}.wrap{max-width:760px;margin:40px auto;padding:20px}.card{background:#fff;border-radius:18px;padding:32px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08)}.badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#e8f5ee;color:#198754;font-weight:700}code{background:#f0f0f0;padding:2px 6px;border-radius:6px}</style></head><body><div class="wrap"><div class="card"><div class="badge">LAB · PORT 9000</div>' + body + '<p style="color:#6c757d">Status: <code>' + status.state + '</code></p><button onclick="location.reload()" style="padding:10px 18px;border:1px solid #198754;background:#198754;color:#fff;border-radius:8px;cursor:pointer">Refresh</button></div></div>' + (status.ready ? '' : '<script>setTimeout(function(){location.reload()},3000)</script>') + '</body></html>');
+  const qrMarkup = status.qrAvailable
+    ? '<div class="qr-wrap"><img class="qr" src="/qr.png?t=' + Date.now() + '" alt="QR WhatsApp"></div>'
+    : '<div class="waiting"><div class="spinner"></div></div>';
+  const heading = status.ready ? 'WhatsApp Terhubung' : 'Scan QR WhatsApp';
+  const description = status.ready
+    ? 'WhatsApp sudah terhubung dan siap digunakan.'
+    : 'Buka WhatsApp di HP, pilih Perangkat tertaut, lalu scan QR ini.';
+  res.send(\`<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WhatsApp Gateway · LAB</title><style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif}body{background:#f8f9fa;color:#495057}.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{width:min(640px,100%);min-height:475px;background:#fff;border:1px solid #ececec;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;text-align:center;padding:42px}.content{width:100%}.title{font-size:14px;font-weight:700;color:#198754;margin-bottom:24px}.qr-wrap{display:flex;justify-content:center;margin-bottom:28px}.qr{width:230px;height:230px;display:block;border:1px solid #dee2e6;border-radius:7px;padding:8px;background:#fff}.waiting{width:230px;height:230px;margin:0 auto 28px;border:1px solid #dee2e6;border-radius:7px;display:flex;align-items:center;justify-content:center;background:#fff}.spinner{width:42px;height:42px;border:4px solid #e9ecef;border-top-color:#198754;border-radius:50%;animation:spin 1s linear infinite}.desc{font-size:16px;line-height:1.6;color:#6c757d;margin-bottom:28px}.status{font-size:13px;color:#6c757d;margin-bottom:18px}.refresh{border:1px solid #adb5bd;background:#fff;color:#6c757d;border-radius:4px;padding:7px 12px;font-size:14px;cursor:pointer}.refresh:hover{background:#f1f3f5}@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body><main class="page"><section class="card"><div class="content"><div class="title">\${heading}</div>\${qrMarkup}<div class="desc">\${description}</div><div class="status">Status: \${status.state}</div><button class="refresh" type="button" onclick="location.reload()">Refresh</button></div></section></main>\${status.ready?'':'<script>setTimeout(function(){location.reload()},5000)</script>'}</body></html>\`);
 });
 
 app.get('/qr.png', (req, res) => {
