@@ -18,10 +18,11 @@ if (typeof process.loadEnvFile === 'function') {
 let clientReady = false;
 let initializing = null;
 let qrDataUrl = null;
+let ijinRecoveryScheduled = false;
 
 const AUTH_PATH = path.join(PROJECT_ROOT, '.wwebjs_auth_ijin');
 
-const client = new Client({
+let client = new Client({
   authStrategy: new LocalAuth({
     dataPath: AUTH_PATH
   }),
@@ -86,10 +87,43 @@ client.on('auth_failure', (msg) => {
 });
 
 client.on('disconnected', async (reason) => {
-  console.warn('🔴 WhatsApp disconnected:', reason);
+  console.warn(
+    '🔴 WhatsApp disconnected. Service IJIN tetap berjalan; recovery dijadwalkan:',
+    reason
+  );
 
   clientReady = false;
+  qrDataUrl = null;
 
+  if (ijinRecoveryScheduled) {
+    return;
+  }
+
+  ijinRecoveryScheduled = true;
+
+  setTimeout(async () => {
+    try {
+      try {
+        await client.destroy();
+      } catch (destroyError) {
+        console.warn(
+          '⚠️ IJIN destroy saat recovery:',
+          destroyError.message || destroyError
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await initializeClient();
+    } catch (error) {
+      clientReady = false;
+      console.error(
+        '❌ IJIN recovery gagal:',
+        error.message || error
+      );
+    } finally {
+      ijinRecoveryScheduled = false;
+    }
+  }, 3000).unref();
 });
 
 client.on('change_state', (state) => {
